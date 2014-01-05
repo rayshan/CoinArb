@@ -1,0 +1,19 @@
+{
+  "name": "CoinArb",
+  "version": "0.0.0",
+  "authors": [
+    "Ray Shan <ray@rayshan.com>"
+  ],
+  "main": "index.html",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angularjs": "*"
+  }
+}
