@@ -1,0 +1,30 @@
+@import "../bower_components/bootstrap/less/bootstrap.less";
+
+@grid-gutter-width: 0;
+@ca-dark-1: lighten(black, 5%);
+@ca-dark-2: lighten(black, 10%);
+@ca-light-1: darken(white, 10%);
+@ca-hover-color: @ca-dark-2;
+
+body {
+	background-color: @ca-dark-1;
+	color: @ca-light-1;
+}
+
+div#ca-exchanges {
+	.make-row();
+
+	div {
+		.make-lg-column(2);
+		height: 50vh;
+		text-align: center;
+
+		&:hover {
+			background-color: @ca-dark-2;
+		}
+	}
+}
+
+div#ca-visual {
+	height: 50vh;
+}
