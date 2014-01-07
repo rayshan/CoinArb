@@ -15,7 +15,7 @@
     };
   });
 
-  angular.module('app').factory('tickerSvc', function(exchangeSvc) {});
+  angular.module('app').factory('tickerSvc', function(exchangeSvc, $resource) {});
 
   angular.module('app').factory('socket', function(socketFactory) {
     return socketFactory({
@@ -24,8 +24,31 @@
   });
 
   angular.module('app').controller('AppCtrl', function(socket) {
-    socket.on('message', function(data) {
-      return console.log(data);
+    var channel, obj, _ref,
+      _this = this;
+    this.price = void 0;
+    this.unsubscribe = {
+      depthBTCUSD: {
+        op: 'unsubscribe',
+        channel: '24e67e0d-1cad-4cc0-9e7a-f8523ef460fe'
+      },
+      tradeBTC: {
+        op: 'unsubscribe',
+        channel: 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21'
+      }
+    };
+    socket.on('connect', function() {
+      return console.log("Connected.");
+    });
+    _ref = this.unsubscribe;
+    for (channel in _ref) {
+      obj = _ref[channel];
+      socket.send(JSON.stringify(obj));
+    }
+    socket.on('message', function(res) {
+      try {
+        return _this.price = res.ticker.last.display_short;
+      } catch (_error) {}
     });
   });
 

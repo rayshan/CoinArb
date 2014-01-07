@@ -11,16 +11,33 @@ angular.module('app').factory 'exchangeSvc', () ->
 			site: 'https://mtgox.com/',
 			url: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker'
 
-angular.module('app').factory 'tickerSvc', (exchangeSvc) ->
+angular.module('app').factory 'tickerSvc', (exchangeSvc, $resource) ->
 	return
 
 angular.module('app').factory 'socket', (socketFactory) ->
 	socketFactory({
 		ioSocket: io.connect 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
+#		ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
 	})
 
 angular.module('app').controller 'AppCtrl', (socket) ->
-	socket.on 'message', (data) ->
-		console.log(data)
+	@price = undefined
+
+	@unsubscribe =
+		depthBTCUSD:
+			op: 'unsubscribe'
+			channel: '24e67e0d-1cad-4cc0-9e7a-f8523ef460fe'
+		tradeBTC:
+			op: 'unsubscribe'
+			channel: 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21'
+
+	socket.on 'connect', () ->
+		console.log("Connected.")
+
+	for channel, obj of @unsubscribe
+		socket.send(JSON.stringify(obj))
+
+	socket.on 'message', (res) =>
+		try @price = res.ticker.last.display_short
 
 	return
