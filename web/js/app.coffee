@@ -3,6 +3,9 @@ angular.module('app', [
 	'btford.socket-io'
 ])
 
+angular.module('app').run (tickerSvc) ->
+	return
+
 angular.module('app').factory 'exchangeSvc', () ->
 	exchanges:
 		mtGox: # apiDoc: 'https://bitbucket.org/nitrous/mtgox-api'
@@ -11,8 +14,21 @@ angular.module('app').factory 'exchangeSvc', () ->
 			site: 'https://mtgox.com/',
 			url: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker'
 
-angular.module('app').factory 'tickerSvc', (exchangeSvc, $resource) ->
-	return
+angular.module('app').factory 'tickerSvc', (exchangeSvc, $http, $timeout) ->
+	data =
+		response: 0
+		calls: 0
+
+	poller = () ->
+		$http.get('https://data.btcchina.com/data/ticker').then((res) ->
+			data.response = res.data.ticker.last
+			data.calls++
+			$timeout(poller, 1000)
+		)
+
+	poller()
+
+	data: data
 
 angular.module('app').factory 'socket', (socketFactory) ->
 	socketFactory({
@@ -20,7 +36,7 @@ angular.module('app').factory 'socket', (socketFactory) ->
 #		ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
 	})
 
-angular.module('app').controller 'AppCtrl', (socket) ->
+angular.module('app').controller 'AppCtrl', (socket, tickerSvc) ->
 	@price = undefined
 
 	@unsubscribe =
@@ -39,5 +55,7 @@ angular.module('app').controller 'AppCtrl', (socket) ->
 
 	socket.on 'message', (res) =>
 		try @price = res.ticker.last.display_short
+
+	@price2 = tickerSvc.data
 
 	return

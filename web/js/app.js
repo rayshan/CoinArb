@@ -2,6 +2,8 @@
 (function() {
   angular.module('app', ['ngAnimate', 'btford.socket-io']);
 
+  angular.module('app').run(function(tickerSvc) {});
+
   angular.module('app').factory('exchangeSvc', function() {
     return {
       exchanges: {
@@ -15,7 +17,24 @@
     };
   });
 
-  angular.module('app').factory('tickerSvc', function(exchangeSvc, $resource) {});
+  angular.module('app').factory('tickerSvc', function(exchangeSvc, $http, $timeout) {
+    var data, poller;
+    data = {
+      response: 0,
+      calls: 0
+    };
+    poller = function() {
+      return $http.get('https://data.btcchina.com/data/ticker').then(function(res) {
+        data.response = res.data.ticker.last;
+        data.calls++;
+        return $timeout(poller, 1000);
+      });
+    };
+    poller();
+    return {
+      data: data
+    };
+  });
 
   angular.module('app').factory('socket', function(socketFactory) {
     return socketFactory({
@@ -23,7 +42,7 @@
     });
   });
 
-  angular.module('app').controller('AppCtrl', function(socket) {
+  angular.module('app').controller('AppCtrl', function(socket, tickerSvc) {
     var channel, obj, _ref,
       _this = this;
     this.price = void 0;
@@ -50,6 +69,7 @@
         return _this.price = res.ticker.last.display_short;
       } catch (_error) {}
     });
+    this.price2 = tickerSvc.data;
   });
 
 }).call(this);
