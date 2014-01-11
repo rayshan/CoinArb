@@ -6,15 +6,15 @@
 
   angular.module('app').factory('exchangeSvc', function() {
     var data;
-    data = [
-      {
+    data = {
+      mtgox: {
         id: 'mtgox',
         displayNameEng: 'Mt. Gox',
         defaultCurrency: 'USD',
         website: 'https://mtgox.com/',
         api: {
           type: 'ws',
-          uri: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker'
+          uri: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker_fast'
         },
         fetched: {
           current: {
@@ -32,7 +32,8 @@
             error: null
           }
         }
-      }, {
+      },
+      btcchina: {
         id: 'btcchina',
         displayName: 'BTC China',
         displayNameLocal: '比特币中国',
@@ -58,7 +59,8 @@
             error: null
           }
         }
-      }, {
+      },
+      localbitcoins: {
         id: 'localbitcoins',
         displayName: 'LocalBitcoins.com',
         defaultCurrency: 'USD',
@@ -84,27 +86,78 @@
           }
         }
       }
-    ];
+    };
     return {
       data: data
     };
   });
 
-  angular.module('app').factory('tickerSvc', function(exchangeSvc, $http, $timeout, $resource, poller) {
-    var callback, myPoller, myResource, uri;
-    uri = 'https://api.bitcoinaverage.com/exchanges/USD';
-    callback = function(res) {
-      var now;
-      now = moment();
-      console.log(res);
-      return console.log(now);
+  angular.module('app').factory('notificationSvc', function() {
+    return {
+      enabled: false,
+      create: function(data) {
+        var n;
+        if (Notification.permission !== 'granted') {
+          Notification.requestPermission();
+        }
+        n = new Notification('yo', {
+          body: data
+        });
+      }
     };
-    myResource = $resource(uri);
-    myPoller = poller.get(myResource, {
-      action: 'get',
-      delay: 1000 * 60
-    });
-    myPoller.promise.then(null, null, callback);
+  });
+
+  angular.module('app').factory('tickerSvc', function(exchangeSvc, $http, $timeout, $resource, poller, notificationSvc, $rootScope, $filter) {
+    var USDCNY, callback, checkAndCopy, data, myResource, name, pollers, _i, _len, _ref;
+    USDCNY = 6.05;
+    pollers = [];
+    checkAndCopy = function(id, current) {
+      var check, data, now;
+      now = moment().second();
+      data = exchangeSvc.data[id].fetched;
+      check = current.bid !== data.current.bid || current.ask !== data.current.ask || current.last !== data.current.last;
+      if (check) {
+        current.updateTime = now;
+        angular.copy(data.current, data.previous);
+        angular.copy(current, data.current);
+        console.log(current);
+        console.log(exchangeSvc.data[id].fetched);
+        $rootScope.$broadcast("" + id + "Update");
+      }
+    };
+    callback = {
+      btcchina: function(res) {
+        var current, id;
+        id = "btcchina";
+        current = {
+          bid: $filter('round')(res.ticker.buy / USDCNY, 2),
+          ask: $filter('round')(res.ticker.sell / USDCNY, 2),
+          last: $filter('round')(res.ticker.last / USDCNY, 2),
+          updateTime: null,
+          error: null
+        };
+        checkAndCopy(id, current);
+      },
+      localbitcoins: function(res) {}
+    };
+    _ref = exchangeSvc.data;
+    for (name in _ref) {
+      data = _ref[name];
+      if (data.api.type === "REST") {
+        myResource = $resource(data.api.uri);
+        pollers.push({
+          id: name,
+          item: poller.get(myResource, {
+            action: 'get',
+            delay: 1000 * 5
+          })
+        });
+      }
+    }
+    for (_i = 0, _len = pollers.length; _i < _len; _i++) {
+      poller = pollers[_i];
+      poller.item.promise.then(null, null, callback[poller.id]);
+    }
   });
 
   angular.module('app').factory('socket', function(socketFactory) {
@@ -139,6 +192,9 @@
       try {
         _this.price = res.ticker.last.display_short;
       } catch (_error) {}
+    });
+    $scope.$on("btcchinaUpdate", function(event, data) {
+      return _this.price2 = exchangeSvc.data["btcchina"].fetched.current.last;
     });
   });
 
