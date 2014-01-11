@@ -5979,18 +5979,8 @@ div#ca-exchanges:after {
   clear: both;
 }
 div#ca-exchanges div {
-  position: relative;
-  min-height: 1px;
-  padding-left: 0;
-  padding-right: 0;
   height: 50vh;
   text-align: center;
-}
-@media (min-width: 1200px) {
-  div#ca-exchanges div {
-    float: left;
-    width: 16.666666666666664%;
-  }
 }
 div#ca-exchanges div:hover {
   background-color: #1a1a1a;

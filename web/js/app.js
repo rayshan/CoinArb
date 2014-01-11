@@ -35,13 +35,14 @@
       },
       btcchina: {
         id: 'btcchina',
-        displayName: 'BTC China',
+        displayNameEng: 'BTC China',
         displayNameLocal: '比特币中国',
         defaultCurrency: 'CNY',
         website: 'https://btcchina.com',
         api: {
           type: 'REST',
-          uri: 'https://data.btcchina.com/data/ticker'
+          uri: 'https://data.btcchina.com/data/ticker',
+          rateLimit: 1000 * 5
         },
         fetched: {
           current: {
@@ -62,12 +63,13 @@
       },
       localbitcoins: {
         id: 'localbitcoins',
-        displayName: 'LocalBitcoins.com',
+        displayNameEng: 'LocalBitcoins.com',
         defaultCurrency: 'USD',
         website: 'https://localbitcoins.com',
         api: {
           type: 'REST',
-          uri: 'https://api.bitcoinaverage.com/exchanges/USD'
+          uri: 'https://api.bitcoinaverage.com/exchanges/USD',
+          rateLimit: 1001 * 60
         },
         fetched: {
           current: {
@@ -107,24 +109,30 @@
     };
   });
 
-  angular.module('app').factory('tickerSvc', function(exchangeSvc, $http, $timeout, $resource, poller, notificationSvc, $rootScope, $filter) {
-    var USDCNY, callback, checkAndCopy, data, myResource, name, pollers, _i, _len, _ref;
-    USDCNY = 6.05;
-    pollers = [];
-    checkAndCopy = function(id, current) {
-      var check, data, now;
-      now = moment().second();
-      data = exchangeSvc.data[id].fetched;
-      check = current.bid !== data.current.bid || current.ask !== data.current.ask || current.last !== data.current.last;
-      if (check) {
-        current.updateTime = now;
-        angular.copy(data.current, data.previous);
-        angular.copy(current, data.current);
-        console.log(current);
-        console.log(exchangeSvc.data[id].fetched);
-        $rootScope.$broadcast("" + id + "Update");
+  angular.module('app').factory('checkAndCopySvc', function($rootScope, exchangeSvc, notificationSvc) {
+    return {
+      process: function(id, current) {
+        var changed, data, now;
+        now = moment().second();
+        data = exchangeSvc.data[id].fetched;
+        changed = current.bid !== data.current.bid || current.ask !== data.current.ask || current.last !== data.current.last;
+        if (changed) {
+          current.updateTime = now;
+          angular.copy(data.current, data.previous);
+          angular.copy(current, data.current);
+          if (notificationSvc.enabled) {
+            notificationSvc.create(exchangeSvc.data[id].fetched.current.last);
+          }
+          $rootScope.$broadcast("tickerUpdate");
+        }
       }
     };
+  });
+
+  angular.module('app').factory('tickerSvc', function($resource, $filter, exchangeSvc, poller, checkAndCopySvc) {
+    var USDCNY, callback, data, myResource, name, pollers, _i, _len, _ref;
+    USDCNY = 6.05;
+    pollers = [];
     callback = {
       btcchina: function(res) {
         var current, id;
@@ -136,9 +144,20 @@
           updateTime: null,
           error: null
         };
-        checkAndCopy(id, current);
+        checkAndCopySvc.process(id, current);
       },
-      localbitcoins: function(res) {}
+      localbitcoins: function(res) {
+        var current, id;
+        id = "localbitcoins";
+        current = {
+          bid: res[id].rates.bid,
+          ask: res[id].rates.ask,
+          last: res[id].rates.last,
+          updateTime: null,
+          error: null
+        };
+        checkAndCopySvc.process(id, current);
+      }
     };
     _ref = exchangeSvc.data;
     for (name in _ref) {
@@ -149,7 +168,7 @@
           id: name,
           item: poller.get(myResource, {
             action: 'get',
-            delay: 1000 * 5
+            delay: data.api.rateLimit
           })
         });
       }
@@ -166,10 +185,15 @@
     });
   });
 
-  angular.module('app').controller('AppCtrl', function(socket, exchangeSvc, $scope) {
+  angular.module('app').controller('AppCtrl', function($scope, socket, exchangeSvc) {
     var channel, obj, _ref,
       _this = this;
-    this.price = void 0;
+    this.data = exchangeSvc.data;
+    this.cols = 12 / Object.keys(this.data).length;
+    console.log(this.data);
+    $scope.$on("tickerUpdate", function() {
+      return _this.data = exchangeSvc.data;
+    });
     this.unsubscribe = {
       depthBTCUSD: {
         op: 'unsubscribe',
@@ -192,9 +216,6 @@
       try {
         _this.price = res.ticker.last.display_short;
       } catch (_error) {}
-    });
-    $scope.$on("btcchinaUpdate", function(event, data) {
-      return _this.price2 = exchangeSvc.data["btcchina"].fetched.current.last;
     });
   });
 

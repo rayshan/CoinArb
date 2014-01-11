@@ -35,13 +35,14 @@ angular.module('app').factory 'exchangeSvc', () ->
 			# REST api - https://bitbucket.org/nitrous/mtgox-api
 		btcchina:
 			id: 'btcchina'
-			displayName: 'BTC China'
+			displayNameEng: 'BTC China'
 			displayNameLocal: '比特币中国'
 			defaultCurrency: 'CNY'
 			website: 'https://btcchina.com'
 			api:
 				type: 'REST'
 				uri: 'https://data.btcchina.com/data/ticker'
+				rateLimit: 1000 * 5
 			fetched:
 				current:
 					bid: null
@@ -57,13 +58,14 @@ angular.module('app').factory 'exchangeSvc', () ->
 					error: null
 		localbitcoins:
 			id: 'localbitcoins'
-			displayName: 'LocalBitcoins.com'
+			displayNameEng: 'LocalBitcoins.com'
 			defaultCurrency: 'USD'
 			website: 'https://localbitcoins.com'
 			api:
 				type: 'REST'
 				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
 				# uri: 'https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/' # no Access-Control-Allow-Origin header for CORS
+				rateLimit: 1001 * 60
 			fetched:
 				current:
 					bid: null
@@ -92,52 +94,51 @@ angular.module('app').factory 'notificationSvc', () ->
 			}
 			return
 
-angular.module('app').factory 'tickerSvc', (exchangeSvc, $http, $timeout, $resource, poller, notificationSvc, $rootScope, $filter) ->
-	USDCNY = 6.05
-	pollers = []
-
-	checkAndCopy = (id, current) ->
+angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notificationSvc) ->
+	process: (id, current) ->
 		now = moment().second()
 		data = exchangeSvc.data[id].fetched
 
-		check = current.bid != data.current.bid or current.ask != data.current.ask or current.last != data.current.last
+		changed = current.bid != data.current.bid or current.ask != data.current.ask or current.last != data.current.last
 
-		if check
+		if changed
 			current.updateTime = now
 			angular.copy(data.current, data.previous)
 			angular.copy(current, data.current)
 
-			console.log(current)
-			console.log(exchangeSvc.data[id].fetched)
+			if notificationSvc.enabled
+				notificationSvc.create(exchangeSvc.data[id].fetched.current.last)
 
-#			if notificationSvc.enabled
-#				notificationSvc.create(exchangeSvc.data[id].fetched.current.last)
-
-			$rootScope.$broadcast("#{id}Update")
+#			$rootScope.$broadcast("#{id}Update")
+			$rootScope.$broadcast("tickerUpdate")
 		return
+
+angular.module('app').factory 'tickerSvc', ($resource, $filter, exchangeSvc, poller, checkAndCopySvc) ->
+	USDCNY = 6.05
+	pollers = []
 
 	callback =
 		btcchina:
 			(res) ->
 				id = "btcchina"
-
 				current =
 					bid: $filter('round')((res.ticker.buy / USDCNY), 2)
 					ask: $filter('round')((res.ticker.sell / USDCNY), 2)
 					last: $filter('round')((res.ticker.last / USDCNY), 2)
 					updateTime: null
 					error: null
-
-				checkAndCopy(id, current)
-
+				checkAndCopySvc.process(id, current)
 				return
-
 		localbitcoins:
 			(res) ->
-#				now = moment()
-#				console.log("local")
-#				console.log(res)
-#				console.log(now)
+				id = "localbitcoins"
+				current =
+					bid: res[id].rates.bid
+					ask: res[id].rates.ask
+					last: res[id].rates.last
+					updateTime: null
+					error: null
+				checkAndCopySvc.process(id, current)
 				return
 
 	for name, data of exchangeSvc.data
@@ -149,7 +150,7 @@ angular.module('app').factory 'tickerSvc', (exchangeSvc, $http, $timeout, $resou
 				item:
 					poller.get myResource, {
 						action: 'get'
-						delay: 1000 * 5 # * 60 # 1 min due to bitcoinaverage api rate limit
+						delay: data.api.rateLimit
 					}
 				}
 			)
@@ -165,8 +166,15 @@ angular.module('app').factory 'socket', (socketFactory) ->
 #		ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
 	})
 
-angular.module('app').controller 'AppCtrl', (socket, exchangeSvc, $scope) ->
-	@price = undefined
+angular.module('app').controller 'AppCtrl', ($scope, socket, exchangeSvc) ->
+	@data = exchangeSvc.data
+	@cols = 12 / Object.keys(@data).length # must be divisible
+	console.log(@data)
+
+	$scope.$on "tickerUpdate", () =>
+		@data = exchangeSvc.data
+
+#	@price = undefined
 #	@price2 = undefined
 
 	@unsubscribe =
@@ -187,14 +195,5 @@ angular.module('app').controller 'AppCtrl', (socket, exchangeSvc, $scope) ->
 	socket.on 'message', (res) =>
 		try @price = res.ticker.last.display_short
 		return
-
-#	$scope.$watch (() -> exchangeSvc.data.btcChina.fetched.price.current), (newVal, oldVal) =>
-#		@price2 = newVal
-#		console.log(@price2)
-#		return
-
-	$scope.$on("btcchinaUpdate", (event, data) =>
-		@price2 = exchangeSvc.data["btcchina"].fetched.current.last
-	)
 
 	return

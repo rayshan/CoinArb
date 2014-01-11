@@ -9,27 +9,16 @@
 <body ng-controller="AppCtrl as app">
 
 <div id="ca-exchanges">
-	<div>
-		Mt. Gox
+	<div ng-class="'col-lg-' + app.cols" ng-repeat="exchange in app.data">
+		{{ exchange.displayNameEng }}
 		<br/>
-		{{ app.price }}
-	</div>
-	<div>
-		Coinbase
-	</div>
-	<div>
-		BTCChina
+		Current:
 		<br/>
-		{{ app.price2 }}
-	</div>
-	<div>
-		BTC-e
-	</div>
-	<div>
-		blah
-	</div>
-	<div>
-		blah
+		{{ exchange.fetched.current.last }}
+		<br/>
+		Previous:
+		<br/>
+		{{ exchange.btcchina.fetched.previous.last }}
 	</div>
 </div>
 
