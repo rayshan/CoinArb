@@ -14,7 +14,7 @@
         website: 'https://mtgox.com/',
         api: {
           type: 'ws',
-          uri: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker_fast'
+          uri: 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
         },
         fetched: {
           current: {
@@ -129,7 +129,7 @@
     };
   });
 
-  angular.module('app').factory('tickerSvc', function($resource, $filter, exchangeSvc, poller, checkAndCopySvc) {
+  angular.module('app').factory('tickerSvc', function($resource, $filter, poller, socketSvc, exchangeSvc, checkAndCopySvc) {
     var USDCNY, callback, data, myResource, name, pollers, _i, _len, _ref;
     USDCNY = 6.05;
     pollers = [];
@@ -171,6 +171,8 @@
             delay: data.api.rateLimit
           })
         });
+      } else {
+        socketSvc.process(data);
       }
     }
     for (_i = 0, _len = pollers.length; _i < _len; _i++) {
@@ -179,22 +181,9 @@
     }
   });
 
-  angular.module('app').factory('socket', function(socketFactory) {
-    return socketFactory({
-      ioSocket: io.connect('http://socketio.mtgox.com:80/mtgox?Currency=USD')
-    });
-  });
-
-  angular.module('app').controller('AppCtrl', function($scope, socket, exchangeSvc) {
-    var channel, obj, _ref,
-      _this = this;
-    this.data = exchangeSvc.data;
-    this.cols = 12 / Object.keys(this.data).length;
-    console.log(this.data);
-    $scope.$on("tickerUpdate", function() {
-      return _this.data = exchangeSvc.data;
-    });
-    this.unsubscribe = {
+  angular.module('app').factory('socketSvc', function($rootScope, $filter, socketFactory, checkAndCopySvc) {
+    var unsubscribe;
+    unsubscribe = {
       depthBTCUSD: {
         op: 'unsubscribe',
         channel: '24e67e0d-1cad-4cc0-9e7a-f8523ef460fe'
@@ -204,18 +193,42 @@
         channel: 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21'
       }
     };
-    socket.on('connect', function() {
-      console.log("Connected.");
-    });
-    _ref = this.unsubscribe;
-    for (channel in _ref) {
-      obj = _ref[channel];
-      socket.send(JSON.stringify(obj));
-    }
-    socket.on('message', function(res) {
-      try {
-        _this.price = res.ticker.last.display_short;
-      } catch (_error) {}
+    return {
+      process: function(data) {
+        var channel, obj, socket;
+        socket = socketFactory({
+          ioSocket: io.connect(data.api.uri)
+        });
+        socket.on('connect', function() {
+          $rootScope.$broadcast('socketConnected');
+        });
+        for (channel in unsubscribe) {
+          obj = unsubscribe[channel];
+          socket.send(JSON.stringify(obj));
+        }
+        socket.on('message', function(res) {
+          var current;
+          if (res.op.indexOf("subscribe") === -1) {
+            current = {
+              bid: $filter('round')(res.ticker.buy.value, 2),
+              ask: $filter('round')(res.ticker.sell.value, 2),
+              last: $filter('round')(res.ticker.last.value, 2),
+              updateTime: null,
+              error: null
+            };
+            checkAndCopySvc.process(data.id, current);
+          }
+        });
+      }
+    };
+  });
+
+  angular.module('app').controller('AppCtrl', function($scope, exchangeSvc) {
+    var _this = this;
+    this.data = exchangeSvc.data;
+    this.cols = 12 / Object.keys(this.data).length;
+    $scope.$on("tickerUpdate", function() {
+      return _this.data = exchangeSvc.data;
     });
   });
 

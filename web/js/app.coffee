@@ -18,7 +18,8 @@ angular.module('app').factory 'exchangeSvc', () ->
 			website: 'https://mtgox.com/'
 			api:
 				type: 'ws'
-				uri: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker_fast'
+				uri: 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
+				# uri: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker_fast' # REST api - https://bitbucket.org/nitrous/mtgox-api
 			fetched:
 				current:
 					bid: null
@@ -32,7 +33,6 @@ angular.module('app').factory 'exchangeSvc', () ->
 					last: null
 					updateTime: null
 					error: null
-			# REST api - https://bitbucket.org/nitrous/mtgox-api
 		btcchina:
 			id: 'btcchina'
 			displayNameEng: 'BTC China'
@@ -113,7 +113,7 @@ angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notif
 			$rootScope.$broadcast("tickerUpdate")
 		return
 
-angular.module('app').factory 'tickerSvc', ($resource, $filter, exchangeSvc, poller, checkAndCopySvc) ->
+angular.module('app').factory 'tickerSvc', ($resource, $filter, poller, socketSvc, exchangeSvc, checkAndCopySvc) ->
 	USDCNY = 6.05
 	pollers = []
 
@@ -122,9 +122,9 @@ angular.module('app').factory 'tickerSvc', ($resource, $filter, exchangeSvc, pol
 			(res) ->
 				id = "btcchina"
 				current =
-					bid: $filter('round')((res.ticker.buy / USDCNY), 2)
-					ask: $filter('round')((res.ticker.sell / USDCNY), 2)
-					last: $filter('round')((res.ticker.last / USDCNY), 2)
+					bid: $filter('round')(res.ticker.buy / USDCNY, 2)
+					ask: $filter('round')(res.ticker.sell / USDCNY, 2)
+					last: $filter('round')(res.ticker.last / USDCNY, 2)
 					updateTime: null
 					error: null
 				checkAndCopySvc.process(id, current)
@@ -154,30 +154,15 @@ angular.module('app').factory 'tickerSvc', ($resource, $filter, exchangeSvc, pol
 					}
 				}
 			)
+		else socketSvc.process(data)
 
 	for poller in pollers
 		poller.item.promise.then(null, null, callback[poller.id])
 
 	return
 
-angular.module('app').factory 'socket', (socketFactory) ->
-	socketFactory({
-		ioSocket: io.connect 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
-#		ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
-	})
-
-angular.module('app').controller 'AppCtrl', ($scope, socket, exchangeSvc) ->
-	@data = exchangeSvc.data
-	@cols = 12 / Object.keys(@data).length # must be divisible
-	console.log(@data)
-
-	$scope.$on "tickerUpdate", () =>
-		@data = exchangeSvc.data
-
-#	@price = undefined
-#	@price2 = undefined
-
-	@unsubscribe =
+angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, checkAndCopySvc) ->
+	unsubscribe =
 		depthBTCUSD:
 			op: 'unsubscribe'
 			channel: '24e67e0d-1cad-4cc0-9e7a-f8523ef460fe'
@@ -185,15 +170,47 @@ angular.module('app').controller 'AppCtrl', ($scope, socket, exchangeSvc) ->
 			op: 'unsubscribe'
 			channel: 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21'
 
-	socket.on 'connect', () ->
-		console.log("Connected.")
+	process: (data) ->
+		socket = socketFactory({
+			ioSocket: io.connect data.api.uri
+		# ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
+		})
+
+		socket.on 'connect', () ->
+			$rootScope.$broadcast('socketConnected')
+			return
+
+		for channel, obj of unsubscribe
+			socket.send(JSON.stringify(obj))
+
+		socket.on 'message', (res) ->
+			if res.op.indexOf("subscribe") == -1
+				current =
+					bid: $filter('round')(res.ticker.buy.value, 2)
+					ask: $filter('round')(res.ticker.sell.value, 2)
+					last: $filter('round')(res.ticker.last.value, 2)
+					# last_local is the last trade in your selected auxiliary currency
+					# last_orig is the last trade (any currency)
+					# last_all is that last trade converted to the auxiliary currency
+					# last is the same as last_local
+					updateTime: null
+					error: null
+				checkAndCopySvc.process(data.id, current)
+			return
+
 		return
 
-	for channel, obj of @unsubscribe
-		socket.send(JSON.stringify(obj))
+angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
+	@data = exchangeSvc.data
+	@cols = 12 / Object.keys(@data).length # must be divisible
 
-	socket.on 'message', (res) =>
-		try @price = res.ticker.last.display_short
-		return
+	$scope.$on "tickerUpdate", () =>
+		@data = exchangeSvc.data
+
+#	@price = undefined
+#	@price2 = undefined
+
+
+
 
 	return

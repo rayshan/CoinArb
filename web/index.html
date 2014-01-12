@@ -12,13 +12,13 @@
 	<div ng-class="'col-lg-' + app.cols" ng-repeat="exchange in app.data">
 		{{ exchange.displayNameEng }}
 		<br/>
-		Current:
-		<br/>
 		{{ exchange.fetched.current.last }}
 		<br/>
-		Previous:
+		Last
 		<br/>
-		{{ exchange.btcchina.fetched.previous.last }}
+		{{ exchange.fetched.current.bid }}
+		<br/>
+		Bid-Ask Spread
 	</div>
 </div>
 
