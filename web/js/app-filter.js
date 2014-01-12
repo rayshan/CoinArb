@@ -9,8 +9,8 @@
   });
 
   angular.module('app').filter('round', function() {
-    return function(input, decimals) {
-      return Math.round(input * Math.pow(10, decimals)) / Math.pow(10, decimals);
+    return function(input) {
+      return (input * 1).toFixed(2);
     };
   });
 

@@ -4,96 +4,6 @@
 
   angular.module('app').run(function(tickerSvc) {});
 
-  angular.module('app').factory('exchangeSvc', function() {
-    var data;
-    data = {
-      mtgox: {
-        id: 'mtgox',
-        displayNameEng: 'Mt. Gox',
-        defaultCurrency: 'USD',
-        website: 'https://mtgox.com/',
-        api: {
-          type: 'ws',
-          uri: 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
-        },
-        fetched: {
-          current: {
-            bid: null,
-            ask: null,
-            last: null,
-            updateTime: null,
-            error: null
-          },
-          previous: {
-            bid: null,
-            ask: null,
-            last: null,
-            updateTime: null,
-            error: null
-          }
-        }
-      },
-      btcchina: {
-        id: 'btcchina',
-        displayNameEng: 'BTC China',
-        displayNameLocal: '比特币中国',
-        defaultCurrency: 'CNY',
-        website: 'https://btcchina.com',
-        api: {
-          type: 'REST',
-          uri: 'https://data.btcchina.com/data/ticker',
-          rateLimit: 1000 * 5
-        },
-        fetched: {
-          current: {
-            bid: null,
-            ask: null,
-            last: null,
-            updateTime: null,
-            error: null
-          },
-          previous: {
-            bid: null,
-            ask: null,
-            last: null,
-            updateTime: null,
-            error: null
-          }
-        }
-      },
-      localbitcoins: {
-        id: 'localbitcoins',
-        displayNameEng: 'LocalBitcoins.com',
-        defaultCurrency: 'USD',
-        website: 'https://localbitcoins.com',
-        api: {
-          type: 'REST',
-          uri: 'https://api.bitcoinaverage.com/exchanges/USD',
-          rateLimit: 1001 * 60
-        },
-        fetched: {
-          current: {
-            bid: null,
-            ask: null,
-            last: null,
-            updateTime: null,
-            error: null
-          },
-          previous: {
-            bid: null,
-            ask: null,
-            last: null,
-            updateTime: null,
-            error: null
-          }
-        }
-      }
-    };
-    return {
-      data: data
-    };
-  });
-
   angular.module('app').factory('notificationSvc', function() {
     return {
       enabled: false,
@@ -115,7 +25,7 @@
         var changed, data, now;
         now = moment().second();
         data = exchangeSvc.data[id].fetched;
-        changed = current.bid !== data.current.bid || current.ask !== data.current.ask || current.last !== data.current.last;
+        changed = current.last !== data.current.last || current.spread !== data.current.spread;
         if (changed) {
           current.updateTime = now;
           angular.copy(data.current, data.previous);
@@ -138,9 +48,8 @@
         var current, id;
         id = "btcchina";
         current = {
-          bid: $filter('round')(res.ticker.buy / USDCNY, 2),
-          ask: $filter('round')(res.ticker.sell / USDCNY, 2),
-          last: $filter('round')(res.ticker.last / USDCNY, 2),
+          spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY),
+          last: $filter('round')(res.ticker.last / USDCNY),
           updateTime: null,
           error: null
         };
@@ -150,8 +59,7 @@
         var current, id;
         id = "localbitcoins";
         current = {
-          bid: res[id].rates.bid,
-          ask: res[id].rates.ask,
+          spread: res[id].rates.bid - res[id].rates.ask,
           last: res[id].rates.last,
           updateTime: null,
           error: null
@@ -210,9 +118,8 @@
           var current;
           if (res.op.indexOf("subscribe") === -1) {
             current = {
-              bid: $filter('round')(res.ticker.buy.value, 2),
-              ask: $filter('round')(res.ticker.sell.value, 2),
-              last: $filter('round')(res.ticker.last.value, 2),
+              spread: $filter('round')(res.ticker.buy.value - res.ticker.sell.value),
+              last: $filter('round')(res.ticker.last.value),
               updateTime: null,
               error: null
             };
