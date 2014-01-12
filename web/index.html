@@ -4,6 +4,7 @@
 	<title>CoinArb - Alternative Currency Arbitrage Watcher</title>
 	<base href="/coinarb/web/">
 
+	<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="css/app.css">
 </head>
 <body ng-controller="AppCtrl as app">
@@ -12,13 +13,37 @@
 	<div ng-class="'col-lg-' + app.cols" ng-repeat="exchange in app.data">
 		{{ exchange.displayNameEng }}
 		<br/>
-		{{ exchange.fetched.current.last }}
+
+		<i class="fa fa-usd"></i><span class="display">{{ exchange.fetched.current.last }}</span> / <i class="fa fa-bitcoin"></i>
 		<br/>
-		Last
+		<span class="label"
+		      ng-class="'label-' + (app.diff(exchange.fetched.current.last, exchange.fetched.previous.last) > 0 ? 'success' : 'danger')"
+		      ng-if="app.show(app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true))">
+			<i class="fa"
+			   ng-class="'fa-arrow-' + (app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true) > 0 ? 'up' : 'down')"></i>
+			{{ app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true) | pct }}
+		</span>
 		<br/>
-		{{ exchange.fetched.current.spread }}
+		Last Trade
+		<br/>
+
+		Δ vs. baseline
+		<br/>
+
+		▶ <span class="display">{{ exchange.fetched.current.spread }}</span> ◀
+		<br/>
+		<span class="label"
+		      ng-class="'label-' + (app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread) > 0 ? 'success' : 'danger')"
+		      ng-if="app.show(app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true))">
+			<i class="fa"
+			   ng-class="'fa-arrow-' + (app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true) > 0 ? 'up' : 'down')"></i>
+			{{ app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true) | pct }}
+		</span>
 		<br/>
 		Bid-Ask Spread
+		<br/>
+
+		{{ exchange.fetched.current.updateTime.fromNow() }}
 	</div>
 </div>
 

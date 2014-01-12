@@ -23,7 +23,7 @@
     return {
       process: function(id, current) {
         var changed, data, now;
-        now = moment().second();
+        now = moment();
         data = exchangeSvc.data[id].fetched;
         changed = current.last !== data.current.last || current.spread !== data.current.spread;
         if (changed) {
@@ -109,6 +109,7 @@
         });
         socket.on('connect', function() {
           $rootScope.$broadcast('socketConnected');
+          console.log('connected');
         });
         for (channel in unsubscribe) {
           obj = unsubscribe[channel];
@@ -116,7 +117,7 @@
         }
         socket.on('message', function(res) {
           var current;
-          if (res.op.indexOf("subscribe") === -1) {
+          if (res.op.indexOf("subscribe") === -1 && res.channel_name.indexOf("ticker") !== -1) {
             current = {
               spread: $filter('round')(res.ticker.buy.value - res.ticker.sell.value),
               last: $filter('round')(res.ticker.last.value),
@@ -130,13 +131,24 @@
     };
   });
 
-  angular.module('app').controller('AppCtrl', function($scope, exchangeSvc) {
+  angular.module('app').controller('AppCtrl', function($scope, $filter, exchangeSvc) {
     var _this = this;
     this.data = exchangeSvc.data;
     this.cols = 12 / Object.keys(this.data).length;
+    this.baseline = null;
     $scope.$on("tickerUpdate", function() {
       return _this.data = exchangeSvc.data;
     });
+    this.diff = function(cur, pre, pct) {
+      if (pct = true) {
+        return (cur - pre) / pre * 100;
+      } else {
+        return cur - pre;
+      }
+    };
+    this.show = function(input) {
+      return !isNaN(parseFloat(input)) && isFinite(input) && Math.abs(input) >= 0.01;
+    };
   });
 
 }).call(this);

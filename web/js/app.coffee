@@ -23,7 +23,7 @@ angular.module('app').factory 'notificationSvc', () ->
 
 angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notificationSvc) ->
 	process: (id, current) ->
-		now = moment().second()
+		now = moment()
 		data = exchangeSvc.data[id].fetched
 
 		changed = current.last != data.current.last or current.spread != data.current.spread
@@ -103,13 +103,14 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 
 		socket.on 'connect', () ->
 			$rootScope.$broadcast('socketConnected')
+			console.log('connected')
 			return
 
 		for channel, obj of unsubscribe
 			socket.send(JSON.stringify(obj))
 
 		socket.on 'message', (res) ->
-			if res.op.indexOf("subscribe") == -1
+			if res.op.indexOf("subscribe") == -1 and res.channel_name.indexOf("ticker") != -1 # no subscribe / yes ticker
 				current =
 					spread: $filter('round')(res.ticker.buy.value - res.ticker.sell.value)
 					last: $filter('round')(res.ticker.last.value)
@@ -124,12 +125,22 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 
 		return
 
-angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
+angular.module('app').controller 'AppCtrl', ($scope, $filter, exchangeSvc) ->
 	@data = exchangeSvc.data
 	@cols = 12 / Object.keys(@data).length # must be divisible
+	@baseline = null
 
 	$scope.$on "tickerUpdate", () =>
 		@data = exchangeSvc.data
+
+	@diff = (cur, pre, pct) ->
+		if pct = true
+			return (cur - pre) / pre * 100
+		else
+			return cur - pre
+
+	@show = (input) ->
+		!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) >= 0.01 # only show when >= 0.01%
 
 #	@price = undefined
 #	@price2 = undefined

@@ -21,6 +21,7 @@
     "angular-socket-io": "~0.3.0",
     "socket.io": "~0.9.15",
     "socket.io-client": "~0.9.16",
-    "angular-poller": "~0.1.1"
+    "angular-poller": "~0.1.1",
+    "font-awesome": "~4.0.3"
   }
 }

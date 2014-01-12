@@ -1,10 +1,19 @@
 @import "../bower_components/bootstrap/less/bootstrap.less";
+@import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700);
 
+// bootstrap override
 @grid-gutter-width: 0;
+@brand-success: darken(#5cb85c, @ca-adj-bs-color);
+@brand-danger: darken(#d9534f, @ca-adj-bs-color);
+
+// custom
 @ca-dark-1: lighten(black, 5%);
 @ca-dark-2: lighten(black, 10%);
 @ca-light-1: darken(white, 10%);
 @ca-hover-color: @ca-dark-2;
+@ca-adj-bs-color: 35%;
+//@ca-green: #003A00;
+//@ca-red: #3E0000;
 
 body {
 	background-color: @ca-dark-1;
@@ -27,4 +36,9 @@ div#ca-exchanges {
 
 div#ca-visual {
 	height: 50vh;
+}
+
+span.display {
+	font-family: 'Ubuntu Mono', sans-serif;
+	font-size: 2.5em;
 }

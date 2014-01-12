@@ -3,7 +3,7 @@
   angular.module('app').filter('pct', function() {
     return function(input) {
       if (input !== 0) {
-        return "" + (Math.round(input * 100)) + "%";
+        return "" + ((input * 1).toFixed(2)) + "%";
       }
     };
   });
