@@ -1,10 +1,13 @@
 @import "../bower_components/bootstrap/less/bootstrap.less";
 @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700);
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans:400,700);
 
 // bootstrap override
 @grid-gutter-width: 0;
 @brand-success: darken(#5cb85c, @ca-adj-bs-color);
 @brand-danger: darken(#d9534f, @ca-adj-bs-color);
+@font-family-monospace: 'Ubuntu Mono', monospace;
+@font-family-sans-serif: 'Droid Sans', sans-serif;
 
 // custom
 @ca-dark-1: lighten(black, 5%);
@@ -12,6 +15,7 @@
 @ca-dark-3: lighten(black, 15%);
 @ca-dark-4: lighten(black, 20%);
 @ca-light-1: darken(white, 10%);
+@ca-light-2: darken(white, 50%);
 @ca-hover-color: @ca-dark-2;
 @ca-adj-bs-color: 35%;
 //@ca-green: #003A00;
@@ -19,13 +23,13 @@
 
 body {
 	background-color: @ca-dark-1;
-	color: @ca-light-1;
+	color: @ca-light-2;
 }
 
 div#ca-exchanges {
 	.make-row();
 
-	div {
+	div.ca-exchange {
 //		.make-lg-column(2);
 		height: 50vh;
 		text-align: center;
@@ -40,9 +44,31 @@ div#ca-visual {
 	height: 50vh;
 }
 
-span.display {
-	font-family: 'Ubuntu Mono', sans-serif;
-	font-size: 2.5em;
+div.ca-display {
+//	.make-row();
+
+	div.ca-prefix {
+//		.make-lg-column(1);
+		display: inline-block;
+		vertical-align: middle;
+	}
+
+	div.ca-main {
+//		.make-lg-column(10);
+		display: inline-block;
+		width: 7ch;
+		text-align: right;
+		color: @ca-light-1;
+		font-family: @font-family-monospace;
+		font-size: 2.5em;
+		vertical-align: middle;
+	}
+
+	div.ca-suffix {
+//		.make-lg-column(1);
+		display: inline-block;
+		vertical-align: middle;
+	}
 }
 
 button.ca-button {
@@ -65,6 +91,14 @@ button.ca-button {
 		outline: 0;
 	}
 }
+
+
+
+
+
+
+
+
 
 .outline-inward {
 	display: inline-block;

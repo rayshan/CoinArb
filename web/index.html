@@ -10,12 +10,20 @@
 <body ng-controller="AppCtrl as app">
 
 <div id="ca-exchanges">
-	<div ng-class="'col-lg-' + app.cols" ng-repeat="exchange in app.data">
-		{{ exchange.displayNameEng }}
-		<br/>
+	<div ng-class="'col-lg-' + app.cols" class="ca-exchange" ng-repeat="exchange in app.data">
+		<h2>{{ exchange.displayNameEng }}</h2>
 
-		<i class="fa fa-usd"></i><span class="display"> {{ exchange.fetched.current.last }}</span> / <i class="fa fa-bitcoin"></i>
-		<br/>
+		<!--<ca-num-display></ca-num-display>-->
+
+		<div class="ca-display">
+			<div class="ca-prefix"><i class="fa fa-usd"></i></div>
+			<div class="ca-main">
+				<span ng-show="exchange.fetched.current.last">{{ exchange.fetched.current.last }}</span>
+				<span ng-hide="exchange.fetched.current.last">-</span>
+			</div>
+			<div class="ca-suffix">/ <i class="fa fa-bitcoin"></i></div>
+		</div>
+
 		<span class="label"
 		      ng-class="'label-' + (app.diff(exchange.fetched.current.last, exchange.fetched.previous.last) > 0 ? 'success' : 'danger')"
 		      ng-if="app.show(app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true), 0.009)">
@@ -27,11 +35,15 @@
 		Last Trade
 		<br/>
 
-		▶
-		<span ng-show="app.show(exchange.fetched.current.spread, 0)" class="display">{{ exchange.fetched.current.spread }}</span>
-		<span ng-hide="app.show(exchange.fetched.current.spread, 0)" class="display">-</span>
-		◀
-		<br/>
+		<div class="ca-display">
+			<div class="ca-prefix">▶</div>
+			<div class="ca-main">
+				<span ng-show="app.show(exchange.fetched.current.spread, 0)" class="display">{{ exchange.fetched.current.spread }}</span>
+				<span ng-hide="app.show(exchange.fetched.current.spread, 0)" class="display">-</span>
+			</div>
+			<div class="ca-suffix">◀</div>
+		</div>
+
 		<span class="label"
 		      ng-class="'label-' + (app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread) > 0 ? 'success' : 'danger')"
 		      ng-if="app.show(app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true), 0.009)">
@@ -74,6 +86,7 @@
 <script src="js/app.js"></script>
 <script src="js/app-data.js"></script>
 <script src="js/app-filter.js"></script>
+<script src="js/app-dir.js"></script>
 
 </body>
 </html>

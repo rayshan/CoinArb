@@ -129,15 +129,13 @@ angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
 	@data = exchangeSvc.data
 	@cols = 12 / Object.keys(@data).length # must be divisible
 	@baseline = null
+	@currency = "USD"
 
 	$scope.$on "tickerUpdate", () =>
 		@data = exchangeSvc.data
 
 	@diff = (cur, pre, pct) ->
-		if pct = true
-			return (cur - pre) / pre * 100
-		else
-			return cur - pre
+		if pct == true then (cur - pre) / pre * 100 else cur - pre
 
 	@show = (input, equality) ->
 		!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) > equality # only show when >= 0.01%

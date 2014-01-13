@@ -136,11 +136,12 @@
     this.data = exchangeSvc.data;
     this.cols = 12 / Object.keys(this.data).length;
     this.baseline = null;
+    this.currency = "USD";
     $scope.$on("tickerUpdate", function() {
       return _this.data = exchangeSvc.data;
     });
     this.diff = function(cur, pre, pct) {
-      if (pct = true) {
+      if (pct === true) {
         return (cur - pre) / pre * 100;
       } else {
         return cur - pre;

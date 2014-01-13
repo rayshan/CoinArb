@@ -1,4 +1,5 @@
 @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700);
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans:400,700);
 /*! normalize.css v2.1.3 | MIT License | git.io/normalize */
 article,
 aside,
@@ -256,7 +257,7 @@ html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Droid Sans', sans-serif;
   font-size: 14px;
   line-height: 1.428571429;
   color: #333333;
@@ -338,7 +339,7 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Droid Sans', sans-serif;
   font-weight: 500;
   line-height: 1.1;
   color: inherit;
@@ -626,7 +627,7 @@ code,
 kbd,
 pre,
 samp {
-  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: 'Ubuntu Mono', monospace;
 }
 code {
   padding: 2px 4px;
@@ -5957,7 +5958,7 @@ td.visible-print {
 }
 body {
   background-color: #0d0d0d;
-  color: #e6e6e6;
+  color: #808080;
 }
 div#ca-exchanges {
   margin-left: 0;
@@ -5979,19 +5980,32 @@ div#ca-exchanges:after {
 div#ca-exchanges:after {
   clear: both;
 }
-div#ca-exchanges div {
+div#ca-exchanges div.ca-exchange {
   height: 50vh;
   text-align: center;
 }
-div#ca-exchanges div:hover {
+div#ca-exchanges div.ca-exchange:hover {
   background-color: #1a1a1a;
 }
 div#ca-visual {
   height: 50vh;
 }
-span.display {
-  font-family: 'Ubuntu Mono', sans-serif;
+div.ca-display div.ca-prefix {
+  display: inline-block;
+  vertical-align: middle;
+}
+div.ca-display div.ca-main {
+  display: inline-block;
+  width: 7ch;
+  text-align: right;
+  color: #e6e6e6;
+  font-family: 'Ubuntu Mono', monospace;
   font-size: 2.5em;
+  vertical-align: middle;
+}
+div.ca-display div.ca-suffix {
+  display: inline-block;
+  vertical-align: middle;
 }
 button.ca-button {
   display: inline-block;
