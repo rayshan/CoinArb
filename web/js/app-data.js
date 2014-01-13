@@ -5,6 +5,7 @@
     data = {
       mtgox: {
         id: 'mtgox',
+        order: 1,
         displayNameEng: 'Mt. Gox',
         defaultCurrency: 'USD',
         website: 'https://mtgox.com/',
@@ -29,6 +30,7 @@
       },
       btcchina: {
         id: 'btcchina',
+        order: 2,
         displayNameEng: 'BTC China',
         displayNameLocal: '比特币中国',
         defaultCurrency: 'CNY',
@@ -55,6 +57,7 @@
       },
       localbitcoins: {
         id: 'localbitcoins',
+        order: 3,
         displayNameEng: 'LocalBitcoins.com',
         defaultCurrency: 'USD',
         website: 'https://localbitcoins.com',

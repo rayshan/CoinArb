@@ -14,11 +14,11 @@
 		{{ exchange.displayNameEng }}
 		<br/>
 
-		<i class="fa fa-usd"></i><span class="display">{{ exchange.fetched.current.last }}</span> / <i class="fa fa-bitcoin"></i>
+		<i class="fa fa-usd"></i><span class="display"> {{ exchange.fetched.current.last }}</span> / <i class="fa fa-bitcoin"></i>
 		<br/>
 		<span class="label"
 		      ng-class="'label-' + (app.diff(exchange.fetched.current.last, exchange.fetched.previous.last) > 0 ? 'success' : 'danger')"
-		      ng-if="app.show(app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true))">
+		      ng-if="app.show(app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true), 0.009)">
 			<i class="fa"
 			   ng-class="'fa-arrow-' + (app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true) > 0 ? 'up' : 'down')"></i>
 			{{ app.diff(exchange.fetched.current.last, exchange.fetched.previous.last, true) | pct }}
@@ -27,14 +27,14 @@
 		Last Trade
 		<br/>
 
-		Δ vs. baseline
-		<br/>
-
-		▶ <span class="display">{{ exchange.fetched.current.spread }}</span> ◀
+		▶
+		<span ng-show="app.show(exchange.fetched.current.spread, 0)" class="display">{{ exchange.fetched.current.spread }}</span>
+		<span ng-hide="app.show(exchange.fetched.current.spread, 0)" class="display">-</span>
+		◀
 		<br/>
 		<span class="label"
 		      ng-class="'label-' + (app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread) > 0 ? 'success' : 'danger')"
-		      ng-if="app.show(app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true))">
+		      ng-if="app.show(app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true), 0.009)">
 			<i class="fa"
 			   ng-class="'fa-arrow-' + (app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true) > 0 ? 'up' : 'down')"></i>
 			{{ app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true) | pct }}
@@ -43,7 +43,14 @@
 		Bid-Ask Spread
 		<br/>
 
-		{{ exchange.fetched.current.updateTime.fromNow() }}
+		<small>{{ exchange.fetched.current.updateTime.fromNow() }}</small>
+
+		<br/>
+		Δ vs. baseline {{ app.baseline }}
+		<br/>
+		<button type="button" class="ca-button outline-inward" ng-click="app.baseline = exchange.id">
+			<span>Baseline</span>
+		</button>
 	</div>
 </div>
 

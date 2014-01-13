@@ -2,6 +2,7 @@ angular.module('app').factory 'exchangeSvc', () ->
 	data =
 		mtgox:
 			id: 'mtgox' # based on bitcoinaverage
+			order: 1 # always 1st
 			displayNameEng: 'Mt. Gox'
 			defaultCurrency: 'USD'
 			website: 'https://mtgox.com/'
@@ -22,6 +23,7 @@ angular.module('app').factory 'exchangeSvc', () ->
 					error: null
 		btcchina:
 			id: 'btcchina'
+			order: 2
 			displayNameEng: 'BTC China'
 			displayNameLocal: '比特币中国'
 			defaultCurrency: 'CNY'
@@ -43,6 +45,7 @@ angular.module('app').factory 'exchangeSvc', () ->
 					error: null
 		localbitcoins:
 			id: 'localbitcoins'
+			order: 3
 			displayNameEng: 'LocalBitcoins.com'
 			defaultCurrency: 'USD'
 			website: 'https://localbitcoins.com'

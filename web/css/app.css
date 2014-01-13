@@ -5993,3 +5993,51 @@ span.display {
   font-family: 'Ubuntu Mono', sans-serif;
   font-size: 2.5em;
 }
+button.ca-button {
+  display: inline-block;
+  color: #e6e6e6;
+  background-color: #1a1a1a;
+  border: 1px solid #262626;
+  padding: 10px;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+}
+button.ca-button:hover {
+  background-color: #0d0d0d;
+  border: 1px solid #0d0d0d;
+}
+button.ca-button:focus {
+  outline: 0;
+}
+.outline-inward {
+  display: inline-block;
+  position: relative;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+}
+.outline-inward:before {
+  content: '';
+  position: absolute;
+  border: #0d0d0d solid 5px;
+  top: -16px;
+  right: -16px;
+  bottom: -16px;
+  left: -16px;
+  opacity: 0;
+  -webkit-transition-duration: .3s;
+  transition-duration: .3s;
+  -webkit-transition-property: top, right, bottom, left;
+  transition-property: top, right, bottom, left;
+}
+.outline-inward:hover:before {
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  opacity: 1;
+}

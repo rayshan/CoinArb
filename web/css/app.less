@@ -9,6 +9,8 @@
 // custom
 @ca-dark-1: lighten(black, 5%);
 @ca-dark-2: lighten(black, 10%);
+@ca-dark-3: lighten(black, 15%);
+@ca-dark-4: lighten(black, 20%);
 @ca-light-1: darken(white, 10%);
 @ca-hover-color: @ca-dark-2;
 @ca-adj-bs-color: 35%;
@@ -41,4 +43,58 @@ div#ca-visual {
 span.display {
 	font-family: 'Ubuntu Mono', sans-serif;
 	font-size: 2.5em;
+}
+
+button.ca-button {
+	display: inline-block;
+	color: @ca-light-1;
+	background-color: @ca-dark-2;
+	border: 1px solid @ca-dark-3;
+	padding: 10px;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+
+	&:hover {
+		background-color: @ca-dark-1;
+		border: 1px solid @ca-dark-1;
+	}
+
+	&:focus {
+		outline: 0;
+	}
+}
+
+.outline-inward {
+	display: inline-block;
+	position: relative;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	-webkit-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	transform: translateZ(0);
+	box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+}
+
+.outline-inward:before {
+	content: '';
+	position: absolute;
+	border: @ca-dark-1 solid 5px;
+	top: -16px;
+	right: -16px;
+	bottom: -16px;
+	left: -16px;
+	opacity: 0;
+	-webkit-transition-duration: .3s;
+	transition-duration: .3s;
+	-webkit-transition-property: top, right, bottom, left;
+	transition-property: top, right, bottom, left;
+}
+
+.outline-inward:hover:before {
+	top: -8px;
+	right: -8px;
+	bottom: -8px;
+	left: -8px;
+	opacity: 1;
 }

@@ -131,7 +131,7 @@
     };
   });
 
-  angular.module('app').controller('AppCtrl', function($scope, $filter, exchangeSvc) {
+  angular.module('app').controller('AppCtrl', function($scope, exchangeSvc) {
     var _this = this;
     this.data = exchangeSvc.data;
     this.cols = 12 / Object.keys(this.data).length;
@@ -146,8 +146,8 @@
         return cur - pre;
       }
     };
-    this.show = function(input) {
-      return !isNaN(parseFloat(input)) && isFinite(input) && Math.abs(input) >= 0.01;
+    this.show = function(input, equality) {
+      return !isNaN(parseFloat(input)) && isFinite(input) && Math.abs(input) > equality;
     };
   });
 

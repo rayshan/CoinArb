@@ -125,7 +125,7 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 
 		return
 
-angular.module('app').controller 'AppCtrl', ($scope, $filter, exchangeSvc) ->
+angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
 	@data = exchangeSvc.data
 	@cols = 12 / Object.keys(@data).length # must be divisible
 	@baseline = null
@@ -139,8 +139,8 @@ angular.module('app').controller 'AppCtrl', ($scope, $filter, exchangeSvc) ->
 		else
 			return cur - pre
 
-	@show = (input) ->
-		!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) >= 0.01 # only show when >= 0.01%
+	@show = (input, equality) ->
+		!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) > equality # only show when >= 0.01%
 
 #	@price = undefined
 #	@price2 = undefined
