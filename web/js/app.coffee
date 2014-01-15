@@ -29,6 +29,8 @@ angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notif
 		changed = current.last != data.current.last or current.spread != data.current.spread
 
 		if changed
+			data.initialized = true if data.initialized == false
+
 			current.updateTime = now
 			angular.copy(data.current, data.previous)
 			angular.copy(current, data.current)
@@ -95,8 +97,6 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 			op: 'unsubscribe'
 			channel: 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21'
 
-	socketFirst = false
-
 	process: (data) ->
 		socket = socketFactory({
 			ioSocket: io.connect data.api.uri
@@ -111,10 +111,6 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 
 		socket.on 'message', (res) ->
 			if res.op.indexOf("subscribe") == -1 and res.channel_name.indexOf("ticker") != -1 # no subscribe / yes ticker
-				if socketFirst is false
-					$rootScope.$broadcast('socketFirst')
-					socketFirst = true
-
 				current =
 					spread: $filter('round')(res.ticker.buy.value - res.ticker.sell.value)
 					last: $filter('round')(res.ticker.last.value)
@@ -132,18 +128,19 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
 	@data = exchangeSvc.data
 	@cols = 12 / Object.keys(@data).length # must be divisible
-	@baseline = null
+	@baseline = "mtgox"
 	@currency = "USD"
-	@socketConnected = false
 
 	$scope.$on "tickerUpdate", () =>
 		@data = exchangeSvc.data
-
-	$scope.$on "socketFirst", () =>
-		@socketConnected = true
+#		console.log(@data.mtgox.fetched.current.last)
+		return
 
 	@diff = (cur, pre, pct) ->
 		if pct == true then (cur - pre) / pre * 100 else cur - pre
+
+	@diffBaseline = (input) =>
+		input - @data[@baseline].fetched.current.last if @data[@baseline].fetched.current.last?
 
 	@show = (input, equality) ->
 		!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) > equality # only show when >= 0.01%

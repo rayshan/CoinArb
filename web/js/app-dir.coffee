@@ -6,7 +6,7 @@ angular.module('app').directive 'caNumDisplay', () ->
 	scope: # isolated scope for type only
 		name: "@"
 		type: "@" # bind string
-		eq: "@"
+#		eq: "@"
 		cur: "=" # bind scope var
 		pre: "="
 		show: "&" # bind func

@@ -8,7 +8,6 @@
       scope: {
         name: "@",
         type: "@",
-        eq: "@",
         cur: "=",
         pre: "=",
         show: "&",

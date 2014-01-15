@@ -14,6 +14,7 @@
           uri: 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
         },
         fetched: {
+          initialized: false,
           current: {
             last: null,
             spread: null,
@@ -41,6 +42,7 @@
           rateLimit: 1000 * 5
         },
         fetched: {
+          initialized: false,
           current: {
             last: null,
             spread: null,
@@ -67,6 +69,7 @@
           rateLimit: 1001 * 60
         },
         fetched: {
+          initialized: false,
           current: {
             last: null,
             spread: null,

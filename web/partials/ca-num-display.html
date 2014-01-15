@@ -2,23 +2,23 @@
 
 	<div class="ca-prefix">
 		<i class="fa"
-		   ng-class="{price: 'fa-usd', spread: 'fa-arrow-right', delta: 'fa-usd'}[type]"></i>
+		   ng-class="{price: 'fa-usd', spread: 'fa-caret-right', delta: 'fa-usd'}[type]"></i>
 	</div>
 
 	<div class="ca-main">
-		<span ng-show="show({input: cur, eq: eq})">{{ cur }}</span>
-		<span ng-hide="show({input: cur, eq: eq})">-</span>
+		<span ng-show="show({input: cur, eq: 0})">{{ cur }}</span>
+		<span ng-hide="show({input: cur, eq: 0})">-</span>
 	</div>
 
 	<div class="ca-suffix">/
 		<i class="fa"
-		   ng-class="{price: 'fa-bitcoin', spread: 'fa-arrow-left'}[type]"></i>
+		   ng-class="{price: 'fa-bitcoin', spread: 'fa-caret-left'}[type]"></i>
 	</div>
 
 </div>
 
 <span class="label"
-      ng-if="show({input: diff({cur: cur, pre: pre, pct: true}), eq: 0.009})"
+      ng-show="show({input: diff({cur: cur, pre: pre, pct: true}), eq: 0.009})"
       ng-class="'label-' + (diff({cur: cur, pre: pre}) > 0 ? 'success' : 'danger')">
 	<i class="fa"
 	   ng-class="'fa-arrow-' + (diff({cur: cur, pre: pre, pct: true}) > 0 ? 'up' : 'down')"></i>

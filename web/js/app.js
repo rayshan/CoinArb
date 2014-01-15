@@ -27,6 +27,9 @@
         data = exchangeSvc.data[id].fetched;
         changed = current.last !== data.current.last || current.spread !== data.current.spread;
         if (changed) {
+          if (data.initialized === false) {
+            data.initialized = true;
+          }
           current.updateTime = now;
           angular.copy(data.current, data.previous);
           angular.copy(current, data.current);
@@ -90,7 +93,7 @@
   });
 
   angular.module('app').factory('socketSvc', function($rootScope, $filter, socketFactory, checkAndCopySvc) {
-    var socketFirst, unsubscribe;
+    var unsubscribe;
     unsubscribe = {
       depthBTCUSD: {
         op: 'unsubscribe',
@@ -101,7 +104,6 @@
         channel: 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21'
       }
     };
-    socketFirst = false;
     return {
       process: function(data) {
         var channel, obj, socket;
@@ -115,10 +117,6 @@
         socket.on('message', function(res) {
           var current;
           if (res.op.indexOf("subscribe") === -1 && res.channel_name.indexOf("ticker") !== -1) {
-            if (socketFirst === false) {
-              $rootScope.$broadcast('socketFirst');
-              socketFirst = true;
-            }
             current = {
               spread: $filter('round')(res.ticker.buy.value - res.ticker.sell.value),
               last: $filter('round')(res.ticker.last.value),
@@ -136,20 +134,21 @@
     var _this = this;
     this.data = exchangeSvc.data;
     this.cols = 12 / Object.keys(this.data).length;
-    this.baseline = null;
+    this.baseline = "mtgox";
     this.currency = "USD";
-    this.socketConnected = false;
     $scope.$on("tickerUpdate", function() {
-      return _this.data = exchangeSvc.data;
-    });
-    $scope.$on("socketFirst", function() {
-      return _this.socketConnected = true;
+      _this.data = exchangeSvc.data;
     });
     this.diff = function(cur, pre, pct) {
       if (pct === true) {
         return (cur - pre) / pre * 100;
       } else {
         return cur - pre;
+      }
+    };
+    this.diffBaseline = function(input) {
+      if (_this.data[_this.baseline].fetched.current.last != null) {
+        return input - _this.data[_this.baseline].fetched.current.last;
       }
     };
     this.show = function(input, equality) {

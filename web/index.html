@@ -13,38 +13,32 @@
 	<div ng-class="'col-lg-' + app.cols" class="ca-exchange" ng-repeat="exchange in app.data">
 		<h2>{{ exchange.displayNameEng }}</h2>
 
+		<i ng-hide="exchange.fetched.initialized === true" class="fa fa-refresh fa-spin fa-5x"></i>
 
-		<!--<div class="wrapper" ng-class="(app.socketConnected && exchange.id === 'mtgox') ? '' : 'ca-blur'">-->
-		<div class="wrapper">
+		<div class="wrapper" ng-class="exchange.fetched.initialized === true ? '' : 'ca-blur'">
 			<ca-num-display name="Last Trade"
 											type="price"
 											show="app.show(input, eq)"
 											diff="app.diff(cur, pre, pct)"
 											cur="exchange.fetched.current.last"
-											pre="exchange.fetched.previous.last"
-											eq="0"></ca-num-display>
+											pre="exchange.fetched.previous.last"></ca-num-display>
 
-			<!--<ca-num-display-->
-					<!--type="spread"-->
-					<!--show="app.show(input, equality)"-->
-					<!--data="exchange.fetched.current.spread" eq="0"></ca-num-display>-->
+			<ca-num-display name="Bid-Ask Spread"
+			                type="spread"
+			                show="app.show(input, eq)"
+			                diff="app.diff(cur, pre, pct)"
+			                cur="exchange.fetched.current.spread"
+			                pre="exchange.fetched.previous.spread"></ca-num-display>
 
-			<!--<span class="label"-->
-			      <!--ng-class="'label-' + (app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread) > 0 ? 'success' : 'danger')"-->
-			      <!--ng-if="app.show(app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true), 0.009)">-->
-				<!--<i class="fa"-->
-				   <!--ng-class="'fa-arrow-' + (app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true) > 0 ? 'up' : 'down')"></i>-->
-				<!--{{ app.diff(exchange.fetched.current.spread, exchange.fetched.previous.spread, true) | pct }}-->
-			<!--</span>-->
 			<br/>
-			Bid-Ask Spread
-			<br/>
-
 			<small>{{ exchange.fetched.current.updateTime.fromNow() }}</small>
 
 			<br/>
+			{{ app.diffBaseline(exchange.fetched.current.last) | round }}
+			<br/>
 			Δ vs. baseline {{ app.baseline }}
 			<br/>
+
 			<button type="button" class="ca-button outline-inward" ng-click="app.baseline = exchange.id">
 				<span>Baseline</span>
 			</button>
