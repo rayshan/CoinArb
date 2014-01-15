@@ -5956,6 +5956,10 @@ td.visible-print {
     display: none !important;
   }
 }
+.ca-blur {
+  filter: blur(5px);
+  -webkit-filter: blur(5px);
+}
 body {
   background-color: #0d0d0d;
   color: #808080;
@@ -5981,14 +5985,14 @@ div#ca-exchanges:after {
   clear: both;
 }
 div#ca-exchanges div.ca-exchange {
-  height: 50vh;
+  height: 70vh;
   text-align: center;
 }
 div#ca-exchanges div.ca-exchange:hover {
   background-color: #1a1a1a;
 }
 div#ca-visual {
-  height: 50vh;
+  height: 30.000000000000004vh;
 }
 div.ca-display div.ca-prefix {
   display: inline-block;

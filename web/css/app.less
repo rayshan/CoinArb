@@ -10,6 +10,7 @@
 @font-family-sans-serif: 'Droid Sans', sans-serif;
 
 // custom
+@ca-split: .70; // top
 @ca-dark-1: lighten(black, 5%);
 @ca-dark-2: lighten(black, 10%);
 @ca-dark-3: lighten(black, 15%);
@@ -21,6 +22,11 @@
 //@ca-green: #003A00;
 //@ca-red: #3E0000;
 
+.ca-blur {
+	filter: blur(5px);
+	-webkit-filter: blur(5px);
+}
+
 body {
 	background-color: @ca-dark-1;
 	color: @ca-light-2;
@@ -31,7 +37,7 @@ div#ca-exchanges {
 
 	div.ca-exchange {
 //		.make-lg-column(2);
-		height: 50vh;
+		height: @ca-split * 100vh;
 		text-align: center;
 
 		&:hover {
@@ -41,7 +47,7 @@ div#ca-exchanges {
 }
 
 div#ca-visual {
-	height: 50vh;
+	height: (1 - @ca-split) * 100vh;
 }
 
 div.ca-display {
@@ -108,27 +114,27 @@ button.ca-button {
 	-ms-transform: translateZ(0);
 	transform: translateZ(0);
 	box-shadow: 0 0 1px rgba(0, 0, 0, 0);
-}
 
-.outline-inward:before {
-	content: '';
-	position: absolute;
-	border: @ca-dark-1 solid 5px;
-	top: -16px;
-	right: -16px;
-	bottom: -16px;
-	left: -16px;
-	opacity: 0;
-	-webkit-transition-duration: .3s;
-	transition-duration: .3s;
-	-webkit-transition-property: top, right, bottom, left;
-	transition-property: top, right, bottom, left;
-}
+	&:before {
+		content: '';
+		position: absolute;
+		border: @ca-dark-1 solid 5px;
+		top: -16px;
+		right: -16px;
+		bottom: -16px;
+		left: -16px;
+		opacity: 0;
+		-webkit-transition-duration: .3s;
+		transition-duration: .3s;
+		-webkit-transition-property: top, right, bottom, left;
+		transition-property: top, right, bottom, left;
+	}
 
-.outline-inward:hover:before {
-	top: -8px;
-	right: -8px;
-	bottom: -8px;
-	left: -8px;
-	opacity: 1;
+	&:hover:before {
+		top: -8px;
+		right: -8px;
+		bottom: -8px;
+		left: -8px;
+		opacity: 1;
+	}
 }

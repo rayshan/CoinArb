@@ -95,22 +95,26 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 			op: 'unsubscribe'
 			channel: 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21'
 
+	socketFirst = false
+
 	process: (data) ->
 		socket = socketFactory({
 			ioSocket: io.connect data.api.uri
 		# ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
 		})
 
-		socket.on 'connect', () ->
-			$rootScope.$broadcast('socketConnected')
-			console.log('connected')
-			return
+#		socket.on 'connect', () ->
+#			return
 
 		for channel, obj of unsubscribe
 			socket.send(JSON.stringify(obj))
 
 		socket.on 'message', (res) ->
 			if res.op.indexOf("subscribe") == -1 and res.channel_name.indexOf("ticker") != -1 # no subscribe / yes ticker
+				if socketFirst is false
+					$rootScope.$broadcast('socketFirst')
+					socketFirst = true
+
 				current =
 					spread: $filter('round')(res.ticker.buy.value - res.ticker.sell.value)
 					last: $filter('round')(res.ticker.last.value)
@@ -130,9 +134,13 @@ angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
 	@cols = 12 / Object.keys(@data).length # must be divisible
 	@baseline = null
 	@currency = "USD"
+	@socketConnected = false
 
 	$scope.$on "tickerUpdate", () =>
 		@data = exchangeSvc.data
+
+	$scope.$on "socketFirst", () =>
+		@socketConnected = true
 
 	@diff = (cur, pre, pct) ->
 		if pct == true then (cur - pre) / pre * 100 else cur - pre
