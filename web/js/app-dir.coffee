@@ -9,7 +9,18 @@ angular.module('app').directive 'caNumDisplay', () ->
 #		eq: "@"
 		cur: "=" # bind scope var
 		pre: "="
-		show: "&" # bind func
-		diff: "&"
+		baseline: "="
+#		show: "&" # bind func
+#		diff: "&"
+		diffBaseline: "&"
 	link: (scope, ele, attrs) ->
+		scope.show = (input, equality) ->
+			!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) > equality # only show when >= 0.01%
+
+		scope.diff = (cur, pre, pct) ->
+			if pct == true then (cur - pre) / pre * 100 else cur - pre
+
+		scope.diffBaseline = (cur, baseline) ->
+			cur - baseline if baseline?
+
 		return

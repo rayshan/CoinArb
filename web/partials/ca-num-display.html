@@ -2,27 +2,30 @@
 
 	<div class="ca-prefix">
 		<i class="fa"
-		   ng-class="{price: 'fa-usd', spread: 'fa-caret-right', delta: 'fa-usd'}[type]"></i>
+		   ng-class="{price: 'fa-usd', delta: 'fa-usd', spread: 'fa-caret-right'}[type]"></i>
 	</div>
 
-	<div class="ca-main">
-		<span ng-show="show({input: cur, eq: 0})">{{ cur }}</span>
-		<span ng-hide="show({input: cur, eq: 0})">-</span>
+	<div class="ca-main" ng-switch on="type">
+		<span ng-switch-default ng-show="show(cur, 0)">{{ cur }}</span>
+		<span ng-switch-default ng-hide="show(cur, 0)">-</span>
+
+		<span ng-switch-when="delta" ng-show="show(diffBaseline(cur, baseline), 0)">{{ diffBaseline(cur, baseline) | round }}</span>
+		<span ng-switch-when="delta" ng-hide="show(diffBaseline(cur, baseline), 0)">-</span>
 	</div>
 
 	<div class="ca-suffix">/
 		<i class="fa"
-		   ng-class="{price: 'fa-bitcoin', spread: 'fa-caret-left'}[type]"></i>
+		   ng-class="{price: 'fa-bitcoin', delta: 'fa-bitcoin', spread: 'fa-caret-left'}[type]"></i>
 	</div>
 
 </div>
 
 <span class="label"
-      ng-show="show({input: diff({cur: cur, pre: pre, pct: true}), eq: 0.009})"
-      ng-class="'label-' + (diff({cur: cur, pre: pre}) > 0 ? 'success' : 'danger')">
+      ng-show="show(diff(cur, pre, true), 0.009)"
+      ng-class="'label-' + (diff(cur, pre) > 0 ? 'success' : 'danger')">
 	<i class="fa"
-	   ng-class="'fa-arrow-' + (diff({cur: cur, pre: pre, pct: true}) > 0 ? 'up' : 'down')"></i>
-	{{ diff({cur: cur, pre: pre, pct: true}) | pct }}
+	   ng-class="'fa-arrow-' + (diff(cur, pre, true) > 0 ? 'up' : 'down')"></i>
+	{{ diff(cur, pre, true) | pct }}
 </span>
 <br/>
 {{ name }}

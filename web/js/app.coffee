@@ -136,14 +136,15 @@ angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
 #		console.log(@data.mtgox.fetched.current.last)
 		return
 
-	@diff = (cur, pre, pct) ->
-		if pct == true then (cur - pre) / pre * 100 else cur - pre
-
-	@diffBaseline = (input) =>
-		input - @data[@baseline].fetched.current.last if @data[@baseline].fetched.current.last?
-
-	@show = (input, equality) ->
-		!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) > equality # only show when >= 0.01%
+#	@diff = (cur, pre, pct) ->
+#		if pct == true then (cur - pre) / pre * 100 else cur - pre
+#
+#	@diffBaseline = (input) =>
+#		console.log("hi")
+#		input - @data[@baseline].fetched.current.last if @data[@baseline].fetched.current.last?
+#
+#	@show = (input, equality) ->
+#		!isNaN(parseFloat(input)) and isFinite(input) and Math.abs(input) > equality # only show when >= 0.01%
 
 #	@price = undefined
 #	@price2 = undefined

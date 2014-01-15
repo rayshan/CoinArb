@@ -139,21 +139,6 @@
     $scope.$on("tickerUpdate", function() {
       _this.data = exchangeSvc.data;
     });
-    this.diff = function(cur, pre, pct) {
-      if (pct === true) {
-        return (cur - pre) / pre * 100;
-      } else {
-        return cur - pre;
-      }
-    };
-    this.diffBaseline = function(input) {
-      if (_this.data[_this.baseline].fetched.current.last != null) {
-        return input - _this.data[_this.baseline].fetched.current.last;
-      }
-    };
-    this.show = function(input, equality) {
-      return !isNaN(parseFloat(input)) && isFinite(input) && Math.abs(input) > equality;
-    };
   });
 
 }).call(this);

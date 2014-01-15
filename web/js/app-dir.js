@@ -10,10 +10,26 @@
         type: "@",
         cur: "=",
         pre: "=",
-        show: "&",
-        diff: "&"
+        baseline: "=",
+        diffBaseline: "&"
       },
-      link: function(scope, ele, attrs) {}
+      link: function(scope, ele, attrs) {
+        scope.show = function(input, equality) {
+          return !isNaN(parseFloat(input)) && isFinite(input) && Math.abs(input) > equality;
+        };
+        scope.diff = function(cur, pre, pct) {
+          if (pct === true) {
+            return (cur - pre) / pre * 100;
+          } else {
+            return cur - pre;
+          }
+        };
+        scope.diffBaseline = function(cur, baseline) {
+          if (baseline != null) {
+            return cur - baseline;
+          }
+        };
+      }
     };
   });
 

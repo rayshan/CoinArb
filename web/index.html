@@ -10,7 +10,7 @@
 <body ng-controller="AppCtrl as app">
 
 <div id="ca-exchanges">
-	<div ng-class="'col-lg-' + app.cols" class="ca-exchange" ng-repeat="exchange in app.data">
+	<div ng-class="'col-lg-' + app.cols" class="ca-exchange" ng-repeat="exchange in app.data" ng-mouseenter="focus = true" ng-mouseleave="focus = false">
 		<h2>{{ exchange.displayNameEng }}</h2>
 
 		<i ng-hide="exchange.fetched.initialized === true" class="fa fa-refresh fa-spin fa-5x"></i>
@@ -18,15 +18,11 @@
 		<div class="wrapper" ng-class="exchange.fetched.initialized === true ? '' : 'ca-blur'">
 			<ca-num-display name="Last Trade"
 											type="price"
-											show="app.show(input, eq)"
-											diff="app.diff(cur, pre, pct)"
 											cur="exchange.fetched.current.last"
 											pre="exchange.fetched.previous.last"></ca-num-display>
 
 			<ca-num-display name="Bid-Ask Spread"
 			                type="spread"
-			                show="app.show(input, eq)"
-			                diff="app.diff(cur, pre, pct)"
 			                cur="exchange.fetched.current.spread"
 			                pre="exchange.fetched.previous.spread"></ca-num-display>
 
@@ -34,13 +30,19 @@
 			<small>{{ exchange.fetched.current.updateTime.fromNow() }}</small>
 
 			<br/>
-			{{ app.diffBaseline(exchange.fetched.current.last) | round }}
-			<br/>
-			Δ vs. baseline {{ app.baseline }}
+			<!--{{ app.diffBaseline(exchange.fetched.current.last) | round }}-->
+			<ca-num-display name="Δ vs. {{ app.data[app.baseline].displayNameEng }}"
+			                type="delta"
+			                baseline="app.data[app.baseline].fetched.current.last"
+			                cur="exchange.fetched.current.last"
+			                pre="exchange.fetched.previous.last"></ca-num-display>
 			<br/>
 
-			<button type="button" class="ca-button outline-inward" ng-click="app.baseline = exchange.id">
+			<button ng-show="focus" type="button" class="ca-button outline-inward" ng-click="app.baseline = exchange.id">
 				<span>Baseline</span>
+			</button>
+			<button ng-show="focus" type="button" class="ca-button outline-inward" ng-click="">
+				<span>Show</span>
 			</button>
 		</div>
 
