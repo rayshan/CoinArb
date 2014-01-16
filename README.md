@@ -1,0 +1,4 @@
+CoinArb
+=======
+
+Bitcoin arbitrage watcher.
