@@ -25,18 +25,29 @@
         var changed, data, now;
         now = moment();
         data = exchangeSvc.data[id].fetched;
-        changed = current.last !== data.current.last || current.spread !== data.current.spread;
-        if (changed) {
-          if (data.initialized === false) {
-            data.initialized = true;
-          }
+        if (data.initialized === false) {
+          data.initialized = true;
           current.updateTime = now;
-          angular.copy(data.current, data.previous);
+          data.current = {};
           angular.copy(current, data.current);
           if (notificationSvc.enabled) {
             notificationSvc.create(exchangeSvc.data[id].fetched.current.last);
           }
           $rootScope.$broadcast("tickerUpdate");
+        } else {
+          changed = current.last !== data.current.last || current.spread !== data.current.spread;
+          if (changed) {
+            current.updateTime = now;
+            if (data.previous == null) {
+              data.previous = {};
+            }
+            angular.copy(data.current, data.previous);
+            angular.copy(current, data.current);
+            if (notificationSvc.enabled) {
+              notificationSvc.create(exchangeSvc.data[id].fetched.current.last);
+            }
+            $rootScope.$broadcast("tickerUpdate");
+          }
         }
       }
     };
@@ -46,29 +57,26 @@
     var USDCNY, callback, data, myResource, name, pollers, _i, _len, _ref;
     USDCNY = 6.05;
     pollers = [];
-    callback = {
-      btcchina: function(res) {
-        var current, id;
-        id = "btcchina";
-        current = {
-          spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY),
-          last: $filter('round')(res.ticker.last / USDCNY),
-          updateTime: null,
-          error: null
-        };
-        checkAndCopySvc.process(id, current);
-      },
-      localbitcoins: function(res) {
-        var current, id;
-        id = "localbitcoins";
-        current = {
-          spread: res[id].rates.bid - res[id].rates.ask,
-          last: res[id].rates.last,
-          updateTime: null,
-          error: null
-        };
-        checkAndCopySvc.process(id, current);
-      }
+    callback = function(id) {
+      return function(res) {
+        var current;
+        switch (id) {
+          case "btcchina":
+            current = {
+              spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY),
+              last: $filter('round')(res.ticker.last / USDCNY),
+              updateTime: null
+            };
+            return checkAndCopySvc.process(id, current);
+          default:
+            current = {
+              spread: $filter('round')(res[id].rates.bid - res[id].rates.ask),
+              last: $filter('round')(res[id].rates.last),
+              updateTime: null
+            };
+            return checkAndCopySvc.process(id, current);
+        }
+      };
     };
     _ref = exchangeSvc.data;
     for (name in _ref) {
@@ -88,7 +96,7 @@
     }
     for (_i = 0, _len = pollers.length; _i < _len; _i++) {
       poller = pollers[_i];
-      poller.item.promise.then(null, null, callback[poller.id]);
+      poller.item.promise.then(null, null, callback(poller.id));
     }
   });
 
@@ -133,9 +141,29 @@
   angular.module('app').controller('AppCtrl', function($scope, exchangeSvc) {
     var _this = this;
     this.data = exchangeSvc.data;
-    this.cols = 12 / Object.keys(this.data).length;
+    this.showCount = function() {
+      var count, data, exchange, _ref;
+      count = 0;
+      _ref = this.data;
+      for (exchange in _ref) {
+        data = _ref[exchange];
+        if (data.show === true) {
+          count++;
+        }
+      }
+      return count;
+    };
+    this.cols = 12 / this.showCount();
     this.baseline = "mtgox";
     this.currency = "USD";
+    this.hide = function(id) {
+      if (this.showCount() > 1) {
+        this.data[id].show = false;
+        this.cols = 12 / this.showCount();
+      } else {
+        throw "Must have at least 1 exchange in display.";
+      }
+    };
     $scope.$on("tickerUpdate", function() {
       _this.data = exchangeSvc.data;
     });

@@ -37,7 +37,7 @@ div#ca-exchanges {
 
 	div.ca-exchange {
 //		.make-lg-column(2);
-		height: @ca-split * 100vh;
+		min-height: @ca-split * 100vh;
 		text-align: center;
 
 		&:hover {
@@ -46,12 +46,12 @@ div#ca-exchanges {
 	}
 }
 
-div#ca-visual {
+div#ca-chart {
 	height: (1 - @ca-split) * 100vh;
 }
 
 div.ca-display {
-//	.make-row();
+	margin: 10px 0 10px 0;
 
 	div.ca-prefix {
 //		.make-lg-column(1);
@@ -75,18 +75,22 @@ div.ca-display {
 		display: inline-block;
 		vertical-align: middle;
 	}
+
+	div.ca-delta-label {
+		height: 1.5em;
+	}
 }
 
 button.ca-button {
-	display: inline-block;
+//	display: inline-block;
 	color: @ca-light-1;
 	background-color: @ca-dark-2;
 	border: 1px solid @ca-dark-3;
+	margin: 5px;
 	padding: 10px;
 	text-align: center;
-	white-space: nowrap;
 	vertical-align: middle;
-	cursor: pointer;
+//	white-space: nowrap;
 
 	&:hover {
 		background-color: @ca-dark-1;
@@ -98,13 +102,14 @@ button.ca-button {
 	}
 }
 
+a.ca-button {
+	color: @ca-dark-3;
+	cursor: pointer;
 
-
-
-
-
-
-
+	&:hover {
+		color: @ca-dark-4;
+	}
+}
 
 .outline-inward {
 	display: inline-block;

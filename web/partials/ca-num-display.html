@@ -1,16 +1,18 @@
-<div class="ca-display">
+<div class="ca-display" ng-switch on="type">
+	{{ name }}
+	<br/>
 
 	<div class="ca-prefix">
 		<i class="fa"
 		   ng-class="{price: 'fa-usd', delta: 'fa-usd', spread: 'fa-caret-right'}[type]"></i>
 	</div>
 
-	<div class="ca-main" ng-switch on="type">
+	<div class="ca-main">
 		<span ng-switch-default ng-show="show(cur, 0)">{{ cur }}</span>
 		<span ng-switch-default ng-hide="show(cur, 0)">-</span>
 
-		<span ng-switch-when="delta" ng-show="show(diffBaseline(cur, baseline), 0)">{{ diffBaseline(cur, baseline) | round }}</span>
-		<span ng-switch-when="delta" ng-hide="show(diffBaseline(cur, baseline), 0)">-</span>
+		<span ng-switch-when="delta" ng-show="show(diffBaseline(cur, curBaseline), 0)">{{ diffBaseline(cur, curBaseline) | round }}</span>
+		<span ng-switch-when="delta" ng-hide="show(diffBaseline(cur, curBaseline), 0)">-</span>
 	</div>
 
 	<div class="ca-suffix">/
@@ -18,14 +20,27 @@
 		   ng-class="{price: 'fa-bitcoin', delta: 'fa-bitcoin', spread: 'fa-caret-left'}[type]"></i>
 	</div>
 
-</div>
+	<br/>
 
-<span class="label"
-      ng-show="show(diff(cur, pre, true), 0.009)"
-      ng-class="'label-' + (diff(cur, pre) > 0 ? 'success' : 'danger')">
-	<i class="fa"
-	   ng-class="'fa-arrow-' + (diff(cur, pre, true) > 0 ? 'up' : 'down')"></i>
-	{{ diff(cur, pre, true) | pct }}
-</span>
-<br/>
-{{ name }}
+	<div class="ca-delta-label">
+		<span class="label"
+		      ng-switch-default
+		      ng-show="show(diff(cur, pre, true), 0.009)"
+		      ng-class="'label-' + (diff(cur, pre, true) > 0 ? 'success' : 'danger')">
+			<i class="fa"
+			   ng-class="'fa-arrow-' + (diff(cur, pre, true) > 0 ? 'up' : 'down')"></i>
+			     {{ diff(cur, pre, true) | pct }}
+		</span>
+
+		<!--1 more layer of diff for delta-->
+		<span class="label"
+		      ng-switch-when="delta"
+		      ng-show="show(diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true), 0.009)"
+		      ng-class="'label-' + (diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true) > 0 ? 'success' : 'danger')">
+			<i class="fa"
+			   ng-class="'fa-arrow-' + (diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true) > 0 ? 'up' : 'down')"></i>
+			 {{ diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true) | pct }}
+		</span>
+	</div>
+
+</div>

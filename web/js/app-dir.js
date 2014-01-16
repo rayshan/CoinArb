@@ -10,8 +10,8 @@
         type: "@",
         cur: "=",
         pre: "=",
-        baseline: "=",
-        diffBaseline: "&"
+        curBaseline: "=",
+        preBaseline: "="
       },
       link: function(scope, ele, attrs) {
         scope.show = function(input, equality) {
@@ -24,9 +24,9 @@
             return cur - pre;
           }
         };
-        scope.diffBaseline = function(cur, baseline) {
-          if (baseline != null) {
-            return cur - baseline;
+        scope.diffBaseline = function(input, baseline) {
+          if ((input != null) && (baseline != null)) {
+            return input - baseline;
           }
         };
       }

@@ -3,7 +3,13 @@
   angular.module('app').filter('pct', function() {
     return function(input) {
       if (input !== 0) {
-        return "" + ((input * 1).toFixed(2)) + "%";
+        if (Math.abs(input) < 1) {
+          return "" + ((input * 1).toFixed(2)) + " %";
+        } else if (Math.abs(input) < 10) {
+          return "" + ((input * 1).toFixed(1)) + " %";
+        } else {
+          return "" + ((input * 1).toFixed(0)) + " %";
+        }
       }
     };
   });
@@ -11,6 +17,17 @@
   angular.module('app').filter('round', function() {
     return function(input) {
       return (input * 1).toFixed(2);
+    };
+  });
+
+  angular.module('app').filter('toArray', function() {
+    return function(input) {
+      var i, out;
+      out = [];
+      for (i in input) {
+        out.push(input[i]);
+      }
+      return out;
     };
   });
 

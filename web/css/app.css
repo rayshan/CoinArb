@@ -5985,14 +5985,17 @@ div#ca-exchanges:after {
   clear: both;
 }
 div#ca-exchanges div.ca-exchange {
-  height: 70vh;
+  min-height: 70vh;
   text-align: center;
 }
 div#ca-exchanges div.ca-exchange:hover {
   background-color: #1a1a1a;
 }
-div#ca-visual {
+div#ca-chart {
   height: 30.000000000000004vh;
+}
+div.ca-display {
+  margin: 10px 0 10px 0;
 }
 div.ca-display div.ca-prefix {
   display: inline-block;
@@ -6011,16 +6014,17 @@ div.ca-display div.ca-suffix {
   display: inline-block;
   vertical-align: middle;
 }
+div.ca-display div.ca-delta-label {
+  height: 1.5em;
+}
 button.ca-button {
-  display: inline-block;
   color: #e6e6e6;
   background-color: #1a1a1a;
   border: 1px solid #262626;
+  margin: 5px;
   padding: 10px;
   text-align: center;
-  white-space: nowrap;
   vertical-align: middle;
-  cursor: pointer;
 }
 button.ca-button:hover {
   background-color: #0d0d0d;
@@ -6028,6 +6032,13 @@ button.ca-button:hover {
 }
 button.ca-button:focus {
   outline: 0;
+}
+a.ca-button {
+  color: #262626;
+  cursor: pointer;
+}
+a.ca-button:hover {
+  color: #333333;
 }
 .outline-inward {
   display: inline-block;
