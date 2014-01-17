@@ -1,10 +1,10 @@
 {
   "name": "CoinArb",
-  "version": "0.0.0",
+  "version": "0.1",
   "authors": [
     "Ray Shan <ray@shan.io>"
   ],
-  "main": "index.html",
+  "main": "public/index.html",
   "license": "MIT",
   "ignore": [
     "**/.*",
