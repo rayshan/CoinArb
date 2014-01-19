@@ -6028,13 +6028,12 @@ div#ca-exchanges:after {
 }
 div#ca-exchanges div.ca-exchange {
   min-height: 70vh;
-  margin-top: 5px;
   text-align: center;
-  -webkit-transition: all 0.25s;
-  -moz-transition: all 0.25s;
-  -o-transition: all 0.25s;
-  -ms-transition: all 0.25s;
-  transition: all 0.25s;
+  -webkit-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
+  -moz-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
+  -o-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
+  -ms-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
+  transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
   -webkit-transform-origin: top;
   -moz-transform-origin: top;
   -ms-transform-origin: top;
@@ -6048,6 +6047,7 @@ div#ca-exchanges div.ca-exchange:hover {
   -ms-transform: scale(1.05);
   -o-transform: scale(1.05);
   transform: scale(1.05);
+  z-index: 500;
 }
 div#ca-exchanges div.ca-exchange div.ca-loader {
   z-index: 999;
@@ -6089,8 +6089,11 @@ div#ca-exchanges div.ca-exchange div.ca-blur.disabled {
   -webkit-filter: none;
 }
 div#ca-exchanges div.ca-exchange.ca-baseline {
-  border-top: 5px solid #5bc0de;
-  margin-top: 0;
+  box-shadow: inset 0 5px #5bc0de;
+  z-index: 1;
+}
+div#ca-exchanges div.ca-exchange img.ca-logo {
+  -webkit-filter: grayscale(1) invert(1) brightness(0.95);
 }
 div#ca-chart {
   height: 30.000000000000004vh;
@@ -6164,11 +6167,11 @@ button.ca-btn {
   padding: 10px;
   text-align: center;
   vertical-align: middle;
-  -webkit-transition: all 0.2s;
-  -moz-transition: all 0.2s;
-  -o-transition: all 0.2s;
-  -ms-transition: all 0.2s;
-  transition: all 0.2s;
+  -webkit-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -ms-transition: all 0.2s linear;
+  transition: all 0.2s linear;
 }
 button.ca-btn:hover {
   background-color: #0d0d0d;
@@ -6184,12 +6187,15 @@ button.ca-btn.ca-btn-baseline {
 a.ca-btn {
   color: #333333;
   cursor: pointer;
-  -webkit-transition: all 0.2s;
-  -moz-transition: all 0.2s;
-  -o-transition: all 0.2s;
-  -ms-transition: all 0.2s;
-  transition: all 0.2s;
+  -webkit-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -ms-transition: all 0.2s linear;
+  transition: all 0.2s linear;
 }
 a.ca-btn:hover {
   color: #4d4d4d;
+}
+.label {
+  font-weight: normal;
 }
