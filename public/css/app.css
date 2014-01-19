@@ -6006,27 +6006,47 @@ body {
   background-color: #0d0d0d;
   color: #808080;
 }
-div#ca-exchanges {
+nav {
+  position: absolute;
+  width: 50px;
+  height: 100%;
+  background-color: black;
+  text-align: center;
+}
+nav div.ca-nav-item {
+  width: 100%;
+  line-height: 50px;
+}
+nav div.ca-nav-item i {
+  vertical-align: middle;
+}
+nav div.ca-nav-item:hover {
+  background-color: #0d0d0d;
+}
+div#wrapper {
+  margin-left: 50px;
+}
+div#wrapper section#ca-exchanges {
   margin-left: 0;
   margin-right: 0;
 }
-div#ca-exchanges:before,
-div#ca-exchanges:after {
+div#wrapper section#ca-exchanges:before,
+div#wrapper section#ca-exchanges:after {
   content: " ";
   display: table;
 }
-div#ca-exchanges:after {
+div#wrapper section#ca-exchanges:after {
   clear: both;
 }
-div#ca-exchanges:before,
-div#ca-exchanges:after {
+div#wrapper section#ca-exchanges:before,
+div#wrapper section#ca-exchanges:after {
   content: " ";
   display: table;
 }
-div#ca-exchanges:after {
+div#wrapper section#ca-exchanges:after {
   clear: both;
 }
-div#ca-exchanges div.ca-exchange {
+div#wrapper section#ca-exchanges div.ca-exchange {
   min-height: 70vh;
   text-align: center;
   -webkit-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
@@ -6040,7 +6060,7 @@ div#ca-exchanges div.ca-exchange {
   -o-transform-origin: top;
   transform-origin: top;
 }
-div#ca-exchanges div.ca-exchange:hover {
+div#wrapper section#ca-exchanges div.ca-exchange:hover {
   background-color: #1a1a1a;
   -webkit-transform: scale(1.05);
   -moz-transform: scale(1.05);
@@ -6049,7 +6069,7 @@ div#ca-exchanges div.ca-exchange:hover {
   transform: scale(1.05);
   z-index: 500;
 }
-div#ca-exchanges div.ca-exchange div.ca-loader {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-loader {
   z-index: 999;
   height: 12%;
   margin: auto;
@@ -6064,18 +6084,18 @@ div#ca-exchanges div.ca-exchange div.ca-loader {
   -ms-transition: -webkit-transform 0.25s linear;
   transition: -webkit-transform 0.25s linear;
 }
-div#ca-exchanges div.ca-exchange div.ca-loader.ng-hide-add,
-div#ca-exchanges div.ca-exchange div.ca-loader.ng-hide-remove {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-loader.ng-hide-add,
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-loader.ng-hide-remove {
   display: block!important;
 }
-div#ca-exchanges div.ca-exchange div.ca-loader.ng-hide {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-loader.ng-hide {
   -webkit-transform: scale(0.75);
   -moz-transform: scale(0.75);
   -ms-transform: scale(0.75);
   -o-transform: scale(0.75);
   transform: scale(0.75);
 }
-div#ca-exchanges div.ca-exchange div.ca-blur {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-blur {
   -webkit-transition: all 0.35s linear;
   -moz-transition: all 0.35s linear;
   -o-transition: all 0.35s linear;
@@ -6084,28 +6104,25 @@ div#ca-exchanges div.ca-exchange div.ca-blur {
   filter: blur(3px);
   -webkit-filter: blur(3px);
 }
-div#ca-exchanges div.ca-exchange div.ca-blur.disabled {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-blur.disabled {
   filter: none;
   -webkit-filter: none;
 }
-div#ca-exchanges div.ca-exchange.ca-baseline {
+div#wrapper section#ca-exchanges div.ca-exchange.ca-baseline {
   box-shadow: inset 0 5px #5bc0de;
   z-index: 1;
 }
-div#ca-exchanges div.ca-exchange img.ca-logo {
+div#wrapper section#ca-exchanges div.ca-exchange img.ca-logo {
   -webkit-filter: grayscale(1) invert(1) brightness(0.95);
 }
-div#ca-chart {
-  height: 30.000000000000004vh;
-}
-div.ca-display {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display {
   margin: 10px 0 10px 0;
 }
-div.ca-display div.ca-prefix {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display div.ca-prefix {
   display: inline-block;
   vertical-align: middle;
 }
-div.ca-display div.ca-main {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display div.ca-main {
   display: inline-block;
   width: 7ch;
   text-align: right;
@@ -6124,7 +6141,7 @@ div.ca-display div.ca-main {
   -o-transform-origin: center center;
   transform-origin: center center;
 }
-div.ca-display div.ca-main.change {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display div.ca-main.change {
   -webkit-transform: scale(1.1);
   -moz-transform: scale(1.1);
   -ms-transform: scale(1.1);
@@ -6132,14 +6149,14 @@ div.ca-display div.ca-main.change {
   transform: scale(1.1);
   color: white;
 }
-div.ca-display div.ca-suffix {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display div.ca-suffix {
   display: inline-block;
   vertical-align: middle;
 }
-div.ca-display div.ca-opp-label {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display div.ca-opp-label {
   height: 1.5em;
 }
-div.ca-display .ca-best {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display .ca-best {
   color: #5bc0de !important;
   -webkit-transition: all 0.25s linear;
   -moz-transition: all 0.25s linear;
@@ -6147,17 +6164,20 @@ div.ca-display .ca-best {
   -ms-transition: all 0.25s linear;
   transition: all 0.25s linear;
 }
-div.ca-display .ca-best.ng-hide-add,
-div.ca-display .ca-best.ng-hide-remove {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display .ca-best.ng-hide-add,
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display .ca-best.ng-hide-remove {
   display: block !important;
 }
-div.ca-display .ca-best.ng-hide {
+div#wrapper section#ca-exchanges div.ca-exchange div.ca-display .ca-best.ng-hide {
   color: white !important;
   -webkit-transform: scale(2);
   -moz-transform: scale(2);
   -ms-transform: scale(2);
   -o-transform: scale(2);
   transform: scale(2);
+}
+div#wrapper section#ca-chart {
+  height: 30.000000000000004vh;
 }
 button.ca-btn {
   color: #e6e6e6;

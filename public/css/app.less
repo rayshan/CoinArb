@@ -31,115 +31,140 @@ body {
 	color: @ca-light-2;
 }
 
-div#ca-exchanges {
-	.make-row();
+nav {
+	position: absolute;
+	width: 50px;
+	height: 100%;
+	background-color: black;
+	text-align: center;
 
-	div.ca-exchange {
-		min-height: @ca-split * 100vh;
-		text-align: center;
-		.transition(all 0.25s @ca-easing-func-3);
-		.transform-origin(top);
+	div.ca-nav-item {
+		width: 100%;
+		line-height: 50px;
+
+		i {
+			vertical-align: middle;
+		}
 
 		&:hover {
-			background-color: @ca-dark-2;
-			.scale(1.05);
-			z-index: 500;
-		}
-
-		div.ca-loader {
-			z-index: 999;
-			height: 12%;
-			margin: auto;
-			position: absolute;
-			top: 0; left: 0; bottom: 0; right: 0;
-
-			.transition(-webkit-transform 0.25s @ca-easing-func);
-
-			&.ng-hide-add, &.ng-hide-remove {
-				display: block!important;
-			}
-
-			&.ng-hide { .scale(0.75); }
-
-		}
-
-		div.ca-blur {
-			.transition(all 0.35s @ca-easing-func);
-
-			filter: blur(3px);
-			-webkit-filter: blur(3px);
-
-			&.disabled {
-				filter: none;
-				-webkit-filter: none;
-			}
-		}
-
-		&.ca-baseline {
-			box-shadow: inset 0 5px @brand-info;
-			z-index: 1;
-		}
-
-		img.ca-logo {
-			-webkit-filter: grayscale(1) invert(1) brightness(0.95);
+			background-color: @ca-dark-1;
 		}
 	}
 }
 
-div#ca-chart {
-	height: (1 - @ca-split) * 100vh;
-}
+div#wrapper {
+	margin-left: 50px;
 
-div.ca-display {
-	margin: 10px 0 10px 0;
+	section#ca-exchanges {
+		.make-row();
 
-	div.ca-prefix {
-		display: inline-block;
-		vertical-align: middle;
-	}
+		div.ca-exchange {
+			min-height: @ca-split * 100vh;
+			text-align: center;
+			.transition(all 0.25s @ca-easing-func-3);
+			.transform-origin(top);
 
-	div.ca-main {
-		display: inline-block;
-		width: 7ch;
-		text-align: right;
-		color: @ca-light-1;
-		font-family: @font-family-monospace;
-		font-size: 2.5em;
-		vertical-align: middle;
+			&:hover {
+				background-color: @ca-dark-2;
+				.scale(1.05);
+				z-index: 500;
+			}
 
-		.transition(all 0.15s @ca-easing-func);
-		.transform-origin(center center);
+			div.ca-loader {
+				z-index: 999;
+				height: 12%;
+				margin: auto;
+				position: absolute;
+				top: 0; left: 0; bottom: 0; right: 0;
 
-		&.change {
-			.scale(1.1);
-			color: white;
+				.transition(-webkit-transform 0.25s @ca-easing-func);
+
+				&.ng-hide-add, &.ng-hide-remove {
+					display: block!important;
+				}
+
+				&.ng-hide { .scale(0.75); }
+
+			}
+
+			div.ca-blur {
+				.transition(all 0.35s @ca-easing-func);
+
+				filter: blur(3px);
+				-webkit-filter: blur(3px);
+
+				&.disabled {
+					filter: none;
+					-webkit-filter: none;
+				}
+			}
+
+			&.ca-baseline {
+				box-shadow: inset 0 5px @brand-info;
+				z-index: 1;
+			}
+
+			img.ca-logo {
+				-webkit-filter: grayscale(1) invert(1) brightness(0.95);
+			}
+
+			div.ca-display {
+				margin: 10px 0 10px 0;
+
+				div.ca-prefix {
+					display: inline-block;
+					vertical-align: middle;
+				}
+
+				div.ca-main {
+					display: inline-block;
+					width: 7ch;
+					text-align: right;
+					color: @ca-light-1;
+					font-family: @font-family-monospace;
+					font-size: 2.5em;
+					vertical-align: middle;
+
+					.transition(all 0.15s @ca-easing-func);
+					.transform-origin(center center);
+
+					&.change {
+						.scale(1.1);
+						color: white;
+					}
+				}
+
+				div.ca-suffix {
+					display: inline-block;
+					vertical-align: middle;
+				}
+
+				div.ca-opp-label {
+					height: 1.5em;
+				}
+
+				.ca-best {
+					color: @brand-info !important;
+					.transition(all 0.25s @ca-easing-func);
+
+					&.ng-hide-add, &.ng-hide-remove {
+						display: block !important;
+					}
+
+					&.ng-hide {
+						color: white !important;
+						.scale(2);
+					}
+
+				}
+
+			}
 		}
 	}
 
-	div.ca-suffix {
-		display: inline-block;
-		vertical-align: middle;
+	section#ca-chart {
+		height: (1 - @ca-split) * 100vh;
 	}
-
-	div.ca-opp-label {
-		height: 1.5em;
-	}
-
-	.ca-best {
-		color: @brand-info !important;
-		.transition(all 0.25s @ca-easing-func);
-
-		&.ng-hide-add, &.ng-hide-remove {
-			display: block !important;
-		}
-
-		&.ng-hide {
-			color: white !important;
-			.scale(2);
-		}
-
-	}
-
 }
 
 button.ca-btn {

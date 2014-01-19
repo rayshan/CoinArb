@@ -25,6 +25,7 @@
     "font-awesome": "~4.0.3",
     "lodash": "~2.4.1",
     "less-prefixer": "*",
-    "jquery": "~2.0.3"
+    "jquery": "~2.0.3",
+    "d3": "~3.4.1"
   }
 }
