@@ -2,7 +2,7 @@
 <html ng-app="app">
 <head>
 	<title>CoinArb - Alternative Currency Arbitrage Watcher</title>
-	<!--<base href="/coinarb/web/">-->
+	<base href="/coinarb/">
 
 	<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="css/app.css">
@@ -10,44 +10,51 @@
 <body ng-controller="AppCtrl as app">
 
 <div id="ca-exchanges">
-	<div ng-class="'col-lg-' + app.cols" class="ca-exchange"
+	<div class="ca-exchange {{ 'col-lg-' + app.cols }}"
+	     ng-class="exchange.id === app.baseline ? 'ca-baseline' : ''"
 	     ng-repeat="exchange in app.data | toArray | orderBy: 'order' | filter: {show: true}"
 	     ng-mouseenter="focus = true" ng-mouseleave="focus = false">
 
+		<div class="ca-loader" ng-hide="exchange.fetched.initialized === true">
+			<i class="fa fa-refresh fa-spin fa-5x"></i>
+		</div>
+
 		<h2>{{ exchange.displayNameEng }}</h2>
 
-		<i ng-hide="exchange.fetched.initialized === true" class="fa fa-refresh fa-spin fa-5x"></i>
+		<div class="ca-blur" ng-class="exchange.fetched.initialized === true ? 'disabled' : ''">
 
-		<div class="wrapper" ng-class="exchange.fetched.initialized === true ? '' : 'ca-blur'">
-			<ca-num-display name="Last Trade"
+			<ca-num-display name="Last"
 											type="price"
 											cur="exchange.fetched.current.last"
 											pre="exchange.fetched.previous.last"></ca-num-display>
 
-			<ca-num-display name="Δ vs. {{ app.data[app.baseline].displayNameEng }}"
-			                type="delta"
+			<ca-num-display name="Opp. vs."
+			                type="opp"
+			                baseline="app.baseline"
+			                baseline-best="app.baselineBest"
+			                cur-id="exchange.id"
 			                cur-baseline="app.data[app.baseline].fetched.current.last"
 			                pre-baseline="app.data[app.baseline].fetched.previous.last"
 			                cur="exchange.fetched.current.last"
 			                pre="exchange.fetched.previous.last"></ca-num-display>
 
-			<ca-num-display name="Bid-Ask Spread"
+			<ca-num-display name="Bid-Ask"
 			                type="spread"
 			                cur="exchange.fetched.current.spread"
 			                pre="exchange.fetched.previous.spread"></ca-num-display>
 
 			<br/>
-			<small>{{ exchange.fetched.current.updateTime.fromNow() }}</small>
+			<small>{{ exchange.fetched.current.updateTime.fromNow() }} <i class="fa fa-question-circle"></i></small>
 
 			<br/>
 
-			<button ng-show="focus" type="button" class="ca-button outline-inward" ng-click="app.baseline = exchange.id">
+			<button ng-show="focus" type="button" class="ca-btn ca-btn-baseline" ng-click="app.setBaseline(exchange.id)">
 				<span>Baseline</span>
 			</button>
 
 			<br/>
 
-			<a ng-show="focus" class="ca-button" type="button" ng-click="app.hide(exchange.id)"><i class="fa fa-times fa-5x"></i></a>
+			<a ng-show="focus" class="ca-btn" type="button" ng-click="app.hide(exchange.id)"><i class="fa fa-times fa-5x"></i></a>
 		</div>
 
 	</div>
@@ -55,6 +62,7 @@
 
 <div id="ca-chart">
 	This should be a chart
+	<!--<div ng-class="app.showTime() === true ? 'change' : ''" class="test"><span>{{ app.getTime() }}</span></div>-->
 </div>
 
 <!--vendors-->

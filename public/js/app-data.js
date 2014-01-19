@@ -57,12 +57,13 @@
         order: 2,
         show: true,
         displayNameEng: 'BTC-e',
+        geo: 'BG',
         defaultCurrency: 'USD',
         website: 'https://btc-e.com/',
         api: {
           type: 'REST',
           uri: 'https://api.bitcoinaverage.com/exchanges/USD',
-          rateLimit: 1000 * 5
+          rateLimit: 1001 * 60
         },
         fetched: {
           initialized: false
@@ -79,7 +80,7 @@
         api: {
           type: 'REST',
           uri: 'https://api.bitcoinaverage.com/exchanges/USD',
-          rateLimit: 1000 * 5
+          rateLimit: 1001 * 60
         },
         fetched: {
           initialized: false
@@ -96,7 +97,7 @@
         api: {
           type: 'REST',
           uri: 'https://api.bitcoinaverage.com/exchanges/USD',
-          rateLimit: 1000 * 5
+          rateLimit: 1001 * 60
         },
         fetched: {
           initialized: false

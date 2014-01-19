@@ -24,7 +24,6 @@ angular.module('app').factory 'notificationSvc', () ->
 angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notificationSvc) ->
 	process: (id, current) ->
 		now = moment()
-#		console.log("#{id} processed at #{now.format('h:mm:ss a')}")
 		data = exchangeSvc.data[id].fetched
 
 		if data.initialized is false
@@ -59,23 +58,33 @@ angular.module('app').factory 'tickerSvc', ($resource, $filter, poller, socketSv
 	USDCNY = 6.05
 	pollers = []
 
-	callback = (id) ->
+	notifyCb = (id) ->
 		(res) ->
 			switch id
 				when "btcchina"
 					current =
-						spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY)
 						last: $filter('round')(res.ticker.last / USDCNY)
-						updateTime: null
-#						error: null
+						spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY)
+					#						error: null
 					checkAndCopySvc.process(id, current)
+#				when "btce"
+#					current =
+#						last: $filter('round')(res.ticker.last)
+#						spread: $filter('round')(res.ticker.buy - res.ticker.sell)
+#					#						error: null
+#					checkAndCopySvc.process(id, current)
 				else # all bitcoinaverage api
 					current =
-						spread: $filter('round')(res[id].rates.bid - res[id].rates.ask)
 						last: $filter('round')(res[id].rates.last)
-						updateTime: null
-#						error: null
+						spread: $filter('round')(res[id].rates.bid - res[id].rates.ask)
+					#						error: null
 					checkAndCopySvc.process(id, current)
+			return
+
+	errorCb = (reason) ->
+		throw "poller or resource failed"
+		console.log(reason)
+		return
 
 	for name, data of exchangeSvc.data
 		if data.api.type == "REST"
@@ -93,7 +102,7 @@ angular.module('app').factory 'tickerSvc', ($resource, $filter, poller, socketSv
 		else socketSvc.process(data)
 
 	for poller in pollers
-		poller.item.promise.then(null, null, callback(poller.id))
+		poller.item.promise.then(null, errorCb, notifyCb(poller.id))
 
 	return
 
@@ -112,13 +121,15 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 		# ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
 		})
 
+		socket.forward('error')
+
 #		socket.on 'connect', () ->
 #			return
 
 		for channel, obj of unsubscribe
 			socket.send(JSON.stringify(obj))
 
-		socket.on 'message', (res) ->
+		socket.on "message", (res) ->
 			if res.op.indexOf("subscribe") == -1 and res.channel_name.indexOf("ticker") != -1 # no subscribe / yes ticker
 				current =
 					spread: $filter('round')(res.ticker.buy.value - res.ticker.sell.value)
@@ -132,9 +143,29 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 				checkAndCopySvc.process(data.id, current)
 			return
 
+		socket.on "socket:error", (event, data) ->
+			throw "socket failed"
+			console.log(event)
+			console.log(data)
+			return
+
 		return
 
-angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
+angular.module('app').controller 'AppCtrl', ($scope, $timeout, exchangeSvc) ->
+#	fireDigestEverySecond = () ->
+#		$timeout fireDigestEverySecond , 3000
+#		return
+#
+#	fireDigestEverySecond()
+#
+#	@getTime = (timeZone) ->
+#		now = moment()
+#		now.format('h:mm:ss a')
+#
+#	@showTime = () ->
+#		now = moment()
+#		now.second() % 2 is 0
+
 	@data = exchangeSvc.data
 	@showCount = () ->
 		count = 0
@@ -144,8 +175,28 @@ angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
 		count
 
 	@cols = 12 / @showCount() # must be divisible
-	@baseline = "mtgox"
 	@currency = "USD"
+
+	@baseline = "mtgox"
+	@baselineBest = null
+	@setBaseline = (id) ->
+		@baseline = id
+		$scope.$broadcast "baselineSet"
+		return
+	@getBaselineBest = () ->
+		_lasts = []
+		_highest = null
+		_best = null
+		for exchange of @data
+			_lasts[exchange] = @data[exchange].fetched.current.last if @data[exchange].fetched.current?
+		for key, value of _lasts
+			if @data[@baseline].fetched.current?
+				baselineDiff = Math.abs(value - @data[@baseline].fetched.current.last)
+				if !_highest? or baselineDiff > _highest
+					_highest = baselineDiff
+					_best = key
+		@baselineBest = _best
+		return
 
 	@hide = (id) ->
 		if @showCount() > 1
@@ -156,7 +207,11 @@ angular.module('app').controller 'AppCtrl', ($scope, exchangeSvc) ->
 
 	$scope.$on "tickerUpdate", () =>
 		@data = exchangeSvc.data
-#		console.log(@data.mtgox.fetched.current.last)
+		@getBaselineBest()
+		return
+
+	$scope.$on "baselineSet", () =>
+		@getBaselineBest()
 		return
 
 	return

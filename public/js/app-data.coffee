@@ -61,12 +61,14 @@ angular.module('app').factory 'exchangeSvc', () ->
 			order: 2
 			show: true
 			displayNameEng: 'BTC-e'
+			geo: 'BG'
 			defaultCurrency: 'USD'
 			website: 'https://btc-e.com/'
 			api:
 				type: 'REST'
 				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
-				rateLimit: 1000 * 5
+#				uri: 'https://btc-e.com/api/2/btc_usd/ticker'
+				rateLimit: 1001 * 60
 			fetched:
 				initialized: false
 		bitstamp:
@@ -80,7 +82,7 @@ angular.module('app').factory 'exchangeSvc', () ->
 			api:
 				type: 'REST'
 				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
-				rateLimit: 1000 * 5
+				rateLimit: 1001 * 60
 			fetched:
 				initialized: false
 		bitfinex:
@@ -94,7 +96,7 @@ angular.module('app').factory 'exchangeSvc', () ->
 			api:
 				type: 'REST'
 				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
-				rateLimit: 1000 * 5
+				rateLimit: 1001 * 60
 			fetched:
 				initialized: false
 

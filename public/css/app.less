@@ -1,4 +1,5 @@
 @import "../bower_components/bootstrap/less/bootstrap.less";
+@import "../bower_components/less-prefixer/prefixer.less";
 @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700);
 @import url(http://fonts.googleapis.com/css?family=Droid+Sans:400,700);
 
@@ -11,21 +12,18 @@
 
 // custom
 @ca-split: .70; // top
+
 @ca-dark-1: lighten(black, 5%);
 @ca-dark-2: lighten(black, 10%);
-@ca-dark-3: lighten(black, 15%);
-@ca-dark-4: lighten(black, 20%);
+@ca-dark-3: lighten(black, 20%);
+@ca-dark-4: lighten(black, 30%);
 @ca-light-1: darken(white, 10%);
 @ca-light-2: darken(white, 50%);
 @ca-hover-color: @ca-dark-2;
-@ca-adj-bs-color: 35%;
-//@ca-green: #003A00;
-//@ca-red: #3E0000;
+@ca-adj-bs-color: 35%; // darken by this amt
 
-.ca-blur {
-	filter: blur(5px);
-	-webkit-filter: blur(5px);
-}
+@ca-easing-func: linear;
+@ca-easing-func-2: cubic-bezier(.55,-0.26,.27,.96);
 
 body {
 	background-color: @ca-dark-1;
@@ -36,12 +34,49 @@ div#ca-exchanges {
 	.make-row();
 
 	div.ca-exchange {
-//		.make-lg-column(2);
 		min-height: @ca-split * 100vh;
+		margin-top: 5px;
 		text-align: center;
+		.transition(all 0.25s);
+		.transform-origin(top);
 
 		&:hover {
 			background-color: @ca-dark-2;
+			.scale(1.05)
+		}
+
+		div.ca-loader {
+			z-index: 999;
+			height: 12%;
+			margin: auto;
+			position: absolute;
+			top: 0; left: 0; bottom: 0; right: 0;
+
+			.transition(-webkit-transform 0.25s @ca-easing-func);
+
+			&.ng-hide-add, &.ng-hide-remove {
+				display: block!important;
+			}
+
+			&.ng-hide { .scale(0.75); }
+
+		}
+
+		div.ca-blur {
+			.transition(all 0.35s linear);
+
+			filter: blur(3px);
+			-webkit-filter: blur(3px);
+
+			&.disabled {
+				filter: none;
+				-webkit-filter: none;
+			}
+		}
+
+		&.ca-baseline {
+			border-top: 5px solid @brand-info;
+			margin-top: 0;
 		}
 	}
 }
@@ -54,13 +89,11 @@ div.ca-display {
 	margin: 10px 0 10px 0;
 
 	div.ca-prefix {
-//		.make-lg-column(1);
 		display: inline-block;
 		vertical-align: middle;
 	}
 
 	div.ca-main {
-//		.make-lg-column(10);
 		display: inline-block;
 		width: 7ch;
 		text-align: right;
@@ -68,21 +101,43 @@ div.ca-display {
 		font-family: @font-family-monospace;
 		font-size: 2.5em;
 		vertical-align: middle;
+
+		.transition(all 0.15s @ca-easing-func);
+		.transform-origin(center center);
+
+		&.change {
+			.scale(1.1);
+			color: white;
+		}
 	}
 
 	div.ca-suffix {
-//		.make-lg-column(1);
 		display: inline-block;
 		vertical-align: middle;
 	}
 
-	div.ca-delta-label {
+	div.ca-opp-label {
 		height: 1.5em;
 	}
+
+	.ca-best {
+		color: @brand-info !important;
+		.transition(all 0.25s @ca-easing-func);
+
+		&.ng-hide-add, &.ng-hide-remove {
+			display: block !important;
+		}
+
+		&.ng-hide {
+			color: white !important;
+			.scale(2);
+		}
+
+	}
+
 }
 
-button.ca-button {
-//	display: inline-block;
+button.ca-btn {
 	color: @ca-light-1;
 	background-color: @ca-dark-2;
 	border: 1px solid @ca-dark-3;
@@ -90,6 +145,7 @@ button.ca-button {
 	padding: 10px;
 	text-align: center;
 	vertical-align: middle;
+	.transition(all 0.2s);
 //	white-space: nowrap;
 
 	&:hover {
@@ -97,49 +153,18 @@ button.ca-button {
 		border: 1px solid @ca-dark-1;
 	}
 
-	&:focus {
-		outline: 0;
+	&:focus { outline: 0;	}
+
+	&.ca-btn-baseline {
+		border: 1px solid @brand-info;
+		color: @brand-info;
 	}
 }
 
-a.ca-button {
+a.ca-btn {
 	color: @ca-dark-3;
 	cursor: pointer;
+	.transition(all 0.2s);
 
-	&:hover {
-		color: @ca-dark-4;
-	}
-}
-
-.outline-inward {
-	display: inline-block;
-	position: relative;
-	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-	-webkit-transform: translateZ(0);
-	-ms-transform: translateZ(0);
-	transform: translateZ(0);
-	box-shadow: 0 0 1px rgba(0, 0, 0, 0);
-
-	&:before {
-		content: '';
-		position: absolute;
-		border: @ca-dark-1 solid 5px;
-		top: -16px;
-		right: -16px;
-		bottom: -16px;
-		left: -16px;
-		opacity: 0;
-		-webkit-transition-duration: .3s;
-		transition-duration: .3s;
-		-webkit-transition-property: top, right, bottom, left;
-		transition-property: top, right, bottom, left;
-	}
-
-	&:hover:before {
-		top: -8px;
-		right: -8px;
-		bottom: -8px;
-		left: -8px;
-		opacity: 1;
-	}
+	&:hover { color: @ca-dark-4; }
 }

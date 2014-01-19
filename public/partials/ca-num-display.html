@@ -1,28 +1,40 @@
-<div class="ca-display" ng-switch on="type">
-	{{ name }}
+<div class="ca-display">
+	{{ name }} <span ng-if="type === 'opp'" class="ca-best">{{ getBaselineNameEng() }}</span> <i class="fa fa-question-circle"></i>
 	<br/>
 
 	<div class="ca-prefix">
 		<i class="fa"
-		   ng-class="{price: 'fa-usd', delta: 'fa-usd', spread: 'fa-caret-right'}[type]"></i>
+		   ng-class="{price: 'fa-usd', opp: 'fa-usd', spread: 'fa-caret-right'}[type]"></i>
 	</div>
 
-	<div class="ca-main">
+	<div class="ca-main" ng-switch on="type">
 		<span ng-switch-default ng-show="show(cur, 0)">{{ cur }}</span>
 		<span ng-switch-default ng-hide="show(cur, 0)">-</span>
 
-		<span ng-switch-when="delta" ng-show="show(diffBaseline(cur, curBaseline), 0)">{{ diffBaseline(cur, curBaseline) | round }}</span>
-		<span ng-switch-when="delta" ng-hide="show(diffBaseline(cur, curBaseline), 0)">-</span>
+		<span ng-switch-when="opp" ng-show="show(diffBaseline(cur, curBaseline), 0)">{{ diffBaseline(cur, curBaseline) | round }}</span>
+		<span ng-switch-when="opp" ng-hide="show(diffBaseline(cur, curBaseline), 0)">-</span>
 	</div>
 
 	<div class="ca-suffix">/
 		<i class="fa"
-		   ng-class="{price: 'fa-bitcoin', delta: 'fa-bitcoin', spread: 'fa-caret-left'}[type]"></i>
+		   ng-class="{price: 'fa-bitcoin', opp: 'fa-bitcoin', spread: 'fa-caret-left'}[type]"></i>
 	</div>
 
 	<br/>
 
-	<div class="ca-delta-label">
+	<div class="ca-opp-label" ng-switch on="type"> <!--has height-->
+
+		<span class="label"
+		      ng-switch-when="spread"
+		      ng-show="show(diff(cur, pre, true), 0.009)"
+		      ng-class="'label-' + (diff(cur, pre, true) > 0 ? 'danger' : 'success')"> <!--up is bad-->
+			<i class="fa"
+			   ng-class="'fa-arrow-' + (diff(cur, pre, true) > 0 ? 'up' : 'down')"></i>
+			     {{ diff(cur, pre, true) | pct }}
+		</span>
+
+		<div ng-switch-when="opp" class="ca-best" ng-show="baselineBest === curId"><i class="fa fa-star"></i></div>
+
 		<span class="label"
 		      ng-switch-default
 		      ng-show="show(diff(cur, pre, true), 0.009)"
@@ -32,15 +44,6 @@
 			     {{ diff(cur, pre, true) | pct }}
 		</span>
 
-		<!--1 more layer of diff for delta-->
-		<span class="label"
-		      ng-switch-when="delta"
-		      ng-show="show(diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true), 0.009)"
-		      ng-class="'label-' + (diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true) > 0 ? 'success' : 'danger')">
-			<i class="fa"
-			   ng-class="'fa-arrow-' + (diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true) > 0 ? 'up' : 'down')"></i>
-			 {{ diff(diffBaseline(cur, curBaseline), diffBaseline(pre, preBaseline), true) | pct }}
-		</span>
 	</div>
 
 </div>

@@ -54,29 +54,32 @@
   });
 
   angular.module('app').factory('tickerSvc', function($resource, $filter, poller, socketSvc, exchangeSvc, checkAndCopySvc) {
-    var USDCNY, callback, data, myResource, name, pollers, _i, _len, _ref;
+    var USDCNY, data, errorCb, myResource, name, notifyCb, pollers, _i, _len, _ref;
     USDCNY = 6.05;
     pollers = [];
-    callback = function(id) {
+    notifyCb = function(id) {
       return function(res) {
         var current;
         switch (id) {
           case "btcchina":
             current = {
-              spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY),
               last: $filter('round')(res.ticker.last / USDCNY),
-              updateTime: null
+              spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY)
             };
-            return checkAndCopySvc.process(id, current);
+            checkAndCopySvc.process(id, current);
+            break;
           default:
             current = {
-              spread: $filter('round')(res[id].rates.bid - res[id].rates.ask),
               last: $filter('round')(res[id].rates.last),
-              updateTime: null
+              spread: $filter('round')(res[id].rates.bid - res[id].rates.ask)
             };
-            return checkAndCopySvc.process(id, current);
+            checkAndCopySvc.process(id, current);
         }
       };
+    };
+    errorCb = function(reason) {
+      throw "poller or resource failed";
+      console.log(reason);
     };
     _ref = exchangeSvc.data;
     for (name in _ref) {
@@ -96,7 +99,7 @@
     }
     for (_i = 0, _len = pollers.length; _i < _len; _i++) {
       poller = pollers[_i];
-      poller.item.promise.then(null, null, callback(poller.id));
+      poller.item.promise.then(null, errorCb, notifyCb(poller.id));
     }
   });
 
@@ -118,11 +121,12 @@
         socket = socketFactory({
           ioSocket: io.connect(data.api.uri)
         });
+        socket.forward('error');
         for (channel in unsubscribe) {
           obj = unsubscribe[channel];
           socket.send(JSON.stringify(obj));
         }
-        socket.on('message', function(res) {
+        socket.on("message", function(res) {
           var current;
           if (res.op.indexOf("subscribe") === -1 && res.channel_name.indexOf("ticker") !== -1) {
             current = {
@@ -134,11 +138,16 @@
             checkAndCopySvc.process(data.id, current);
           }
         });
+        socket.on("socket:error", function(event, data) {
+          throw "socket failed";
+          console.log(event);
+          console.log(data);
+        });
       }
     };
   });
 
-  angular.module('app').controller('AppCtrl', function($scope, exchangeSvc) {
+  angular.module('app').controller('AppCtrl', function($scope, $timeout, exchangeSvc) {
     var _this = this;
     this.data = exchangeSvc.data;
     this.showCount = function() {
@@ -154,8 +163,35 @@
       return count;
     };
     this.cols = 12 / this.showCount();
-    this.baseline = "mtgox";
     this.currency = "USD";
+    this.baseline = "mtgox";
+    this.baselineBest = null;
+    this.setBaseline = function(id) {
+      this.baseline = id;
+      $scope.$broadcast("baselineSet");
+    };
+    this.getBaselineBest = function() {
+      var baselineDiff, exchange, key, value, _best, _highest, _lasts;
+      _lasts = [];
+      _highest = null;
+      _best = null;
+      for (exchange in this.data) {
+        if (this.data[exchange].fetched.current != null) {
+          _lasts[exchange] = this.data[exchange].fetched.current.last;
+        }
+      }
+      for (key in _lasts) {
+        value = _lasts[key];
+        if (this.data[this.baseline].fetched.current != null) {
+          baselineDiff = Math.abs(value - this.data[this.baseline].fetched.current.last);
+          if ((_highest == null) || baselineDiff > _highest) {
+            _highest = baselineDiff;
+            _best = key;
+          }
+        }
+      }
+      this.baselineBest = _best;
+    };
     this.hide = function(id) {
       if (this.showCount() > 1) {
         this.data[id].show = false;
@@ -166,6 +202,10 @@
     };
     $scope.$on("tickerUpdate", function() {
       _this.data = exchangeSvc.data;
+      _this.getBaselineBest();
+    });
+    $scope.$on("baselineSet", function() {
+      _this.getBaselineBest();
     });
   });
 
