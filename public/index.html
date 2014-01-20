@@ -4,6 +4,9 @@
 	<title>CoinArb - Alternative Currency Arbitrage Watcher</title>
 	<base href="/coinarb/">
 
+	<!--<link rel="icon" href="favicon.ico" type="image/x-icon">-->
+	<link rel="icon" href="favicon.png" type="image/x-icon">
+
 	<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="css/app.css">
 </head>
@@ -20,6 +23,9 @@
 		<i class="fa fa-gear fa-2x"></i>
 	</div>
 	<div class="ca-nav-item">
+		<i class="fa fa-github fa-2x"></i>
+	</div>
+	<div class="ca-nav-item">
 		<i class="fa fa-gift fa-2x"></i>
 	</div>
 </nav>
@@ -31,14 +37,14 @@
 		     ng-repeat="exchange in app.data | toArray | orderBy: 'order' | filter: {show: true}"
 		     ng-mouseenter="focus = true" ng-mouseleave="focus = false">
 
-			<div class="ca-loader" ng-hide="exchange.fetched.initialized === true">
+			<div class="ca-loader" ng-hide="exchange.fetched.initialized">
 				<i class="fa fa-refresh fa-spin fa-5x"></i>
 			</div>
 
 			<h2>{{ exchange.displayNameEng }}</h2>
 			<!--<img class="ca-logo" src="img/mtgox.jpg" alt=""/>-->
 
-			<div class="ca-blur" ng-class="exchange.fetched.initialized === true ? 'disabled' : ''">
+			<div class="ca-blur" ng-class="exchange.fetched.initialized ? 'disabled' : ''">
 
 				<ca-num-display name="Last"
 				                type="price"
@@ -74,12 +80,12 @@
 				<a ng-show="focus" class="ca-btn" type="button" ng-click="app.hide(exchange.id)"><i class="fa fa-times fa-5x"></i></a>
 			</div>
 
-			<!--<div ng-class="app.showTime() === true ? 'change' : ''" class="test"><span>{{ app.getTime() }}</span></div>-->
+			<!--<div ng-class="app.showTime() ? 'change' : ''" class="test"><span>{{ app.getTime() }}</span></div>-->
 		</div>
 	</section>
 
 	<section id="ca-chart">
-		This should be a chart
+		<ca-chart data="app.dataChart"></ca-chart>
 	</section>
 </div>
 

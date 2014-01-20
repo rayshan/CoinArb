@@ -150,6 +150,7 @@
   angular.module('app').controller('AppCtrl', function($scope, $timeout, exchangeSvc) {
     var _this = this;
     this.data = exchangeSvc.data;
+    this.dataChart = "data/sample.tsv";
     this.showCount = function() {
       var count, data, exchange, _ref;
       count = 0;

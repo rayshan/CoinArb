@@ -3,7 +3,7 @@
   angular.module('app').directive('caNumDisplay', function($animate) {
     return {
       templateUrl: 'partials/ca-num-display.html',
-      transclude: true,
+      replace: true,
       restrict: 'E',
       scope: {
         name: "@",
@@ -48,6 +48,74 @@
             });
           }
         });
+      }
+    };
+  });
+
+  angular.module('app').directive('caChart', function($q) {
+    return {
+      templateUrl: 'partials/ca-chart.html',
+      restrict: 'E',
+      scope: {
+        data: "="
+      },
+      link: function(scope, ele, attrs) {
+        var chart, d3tsv, errorCb, forceNum, h, notifyCb, promise, scalerX, scalerY, successCb, w;
+        scope.dataLoaded = false;
+        scope.chartProcessed = false;
+        w = 500;
+        h = 100;
+        scalerX = d3.scale.ordinal().rangeRoundBands([0, w], .5, .1);
+        scalerY = d3.scale.linear().range([h, 0]);
+        chart = d3.select(".ca-chart-line").attr("width", w).attr("height", "" + h + "%");
+        successCb = function(data) {
+          var bar, max;
+          scope.dataLoaded = true;
+          max = d3.max(data, function(d) {
+            return d.frequency;
+          });
+          scalerX.domain(data.map(function(d) {
+            return d.letter;
+          }));
+          scalerY.domain([0, max]);
+          bar = chart.selectAll("g").data(data).enter().append("g").attr("transform", function(d, i) {
+            return "translate(" + (scalerX(d.letter)) + ", 0)";
+          });
+          bar.append("rect").attr("y", function(d) {
+            return "" + (scalerY(d.frequency)) + "%";
+          }).attr("height", function(d) {
+            return "" + (h - scalerY(d.frequency)) + "%";
+          }).attr("width", scalerX.rangeBand());
+          bar.append("text").attr("x", scalerX.rangeBand() / 2).attr("y", function(d) {
+            return "" + (scalerY(d.frequency) - 5) + "%";
+          }).attr("dy", ".75em").text(function(d) {
+            return d.letter;
+          });
+        };
+        errorCb = function(what) {
+          console.log(what);
+        };
+        notifyCb = function(what) {
+          console.log(what);
+        };
+        forceNum = function(d) {
+          d.frequency = +d.frequency;
+          return d;
+        };
+        d3tsv = function(uri) {
+          var deferred;
+          deferred = $q.defer();
+          d3.tsv(uri, forceNum, function(err, data) {
+            if (err != null) {
+              deferred.reject("didn't work");
+            } else {
+              deferred.resolve(data);
+            }
+          });
+          return deferred.promise;
+        };
+        promise = d3tsv(scope.data);
+        promise.then(successCb, errorCb, notifyCb);
       }
     };
   });

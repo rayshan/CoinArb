@@ -167,6 +167,8 @@ angular.module('app').controller 'AppCtrl', ($scope, $timeout, exchangeSvc) ->
 #		now.second() % 2 is 0
 
 	@data = exchangeSvc.data
+	@dataChart = "data/sample.tsv"
+
 	@showCount = () ->
 		count = 0
 		for exchange, data of @data

@@ -20,7 +20,7 @@
 @ca-light-1: darken(white, 10%);
 @ca-light-2: darken(white, 50%);
 @ca-hover-color: @ca-dark-2;
-@ca-adj-bs-color: 35%; // darken by this amt
+@ca-adj-bs-color: 40%; // darken by this to fit dark theme better
 
 @ca-easing-func: linear;
 @ca-easing-func-2: cubic-bezier(.55,-0.26,.27,.96);
@@ -59,7 +59,7 @@ div#wrapper {
 		.make-row();
 
 		div.ca-exchange {
-			min-height: @ca-split * 100vh;
+			height: @ca-split * 100vh;
 			text-align: center;
 			.transition(all 0.25s @ca-easing-func-3);
 			.transform-origin(top);
@@ -68,35 +68,6 @@ div#wrapper {
 				background-color: @ca-dark-2;
 				.scale(1.05);
 				z-index: 500;
-			}
-
-			div.ca-loader {
-				z-index: 999;
-				height: 12%;
-				margin: auto;
-				position: absolute;
-				top: 0; left: 0; bottom: 0; right: 0;
-
-				.transition(-webkit-transform 0.25s @ca-easing-func);
-
-				&.ng-hide-add, &.ng-hide-remove {
-					display: block!important;
-				}
-
-				&.ng-hide { .scale(0.75); }
-
-			}
-
-			div.ca-blur {
-				.transition(all 0.35s @ca-easing-func);
-
-				filter: blur(3px);
-				-webkit-filter: blur(3px);
-
-				&.disabled {
-					filter: none;
-					-webkit-filter: none;
-				}
 			}
 
 			&.ca-baseline {
@@ -118,7 +89,7 @@ div#wrapper {
 
 				div.ca-main {
 					display: inline-block;
-					width: 7ch;
+					width: 7ch; // width of 0 character
 					text-align: right;
 					color: @ca-light-1;
 					font-family: @font-family-monospace;
@@ -163,6 +134,7 @@ div#wrapper {
 	}
 
 	section#ca-chart {
+		position: relative;
 		height: (1 - @ca-split) * 100vh;
 	}
 }
@@ -201,4 +173,50 @@ a.ca-btn {
 
 .label {
 	font-weight: normal;
+}
+
+div.ca-loader {
+	z-index: 999;
+	width: 70px;
+	height: 70px;
+	margin: auto;
+	overflow: auto;
+	position: absolute;
+	top: 0; left: 0; bottom: 0; right: 0;
+	text-align: center;
+
+	i {vertical-align: middle}
+
+	.transition(-webkit-transform 0.25s @ca-easing-func);
+
+	&.ng-hide-add, &.ng-hide-remove {
+		display: block!important;
+	}
+
+	&.ng-hide { .scale(0.75); }
+
+}
+
+div.ca-blur {
+	.transition(all 0.35s @ca-easing-func);
+
+	filter: blur(3px);
+	-webkit-filter: blur(3px);
+
+	&.disabled {
+		filter: none;
+		-webkit-filter: none;
+	}
+}
+
+.ca-chart-line {
+	rect {
+		fill: steelblue;
+	}
+
+	text {
+		fill: white;
+		font: 10px sans-serif;
+		text-anchor: middle;
+	}
 }
