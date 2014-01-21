@@ -6047,7 +6047,7 @@ div#wrapper section#ca-exchanges:after {
   clear: both;
 }
 div#wrapper section#ca-exchanges div.ca-exchange {
-  height: 70vh;
+  height: 60vh;
   text-align: center;
   -webkit-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
   -moz-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
@@ -6139,7 +6139,7 @@ div#wrapper section#ca-exchanges div.ca-exchange div.ca-display .ca-best.ng-hide
 }
 div#wrapper section#ca-chart {
   position: relative;
-  height: 30.000000000000004vh;
+  height: 39vh;
 }
 button.ca-btn {
   color: #e6e6e6;
@@ -6226,11 +6226,35 @@ div.ca-blur.disabled {
   filter: none;
   -webkit-filter: none;
 }
-.ca-chart-line rect {
-  fill: steelblue;
+.ca-chart-line {
+  cursor: crosshair;
 }
-.ca-chart-line text {
-  fill: white;
+.ca-chart-line .line {
+  fill: none;
+  stroke: #333333;
+  stroke-width: 1.5px;
+}
+.ca-chart-line .line:hover {
+  stroke: #4d4d4d;
+}
+.ca-chart-line .axis text {
   font: 10px sans-serif;
-  text-anchor: middle;
+  fill: #808080;
+}
+.ca-chart-line .axis .label {
+  fill: #808080;
+  font: 10px sans-serif;
+  text-anchor: end;
+}
+.ca-chart-line .axis path,
+.ca-chart-line .axis line {
+  fill: none;
+  stroke: #808080;
+  shape-rendering: crispEdges;
+}
+.ca-chart-line .brush .extent {
+  fill: black;
+  stroke: #333333;
+  fill-opacity: .5;
+  shape-rendering: crispEdges;
 }

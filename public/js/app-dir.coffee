@@ -46,70 +46,180 @@ angular.module('app').directive 'caChart', ($q) ->
 		scope.dataLoaded = false
 		scope.chartProcessed = false
 
+		# ===========================
+		# render things while data loads
 
+		chartCanvas = ele[0].querySelector(".ca-chart-line").children[0]
 
+		wOrig = d3.select(chartCanvas).node().offsetWidth
+		hOrig = d3.select(chartCanvas).node().offsetHeight
+#		hOrig = 300
+#		console.log(wOrig, hOrig)
+		# offsetW/H = border + padding + vertical scrollbar (if present & rendered) + CSS width
+		margin =
+			t: 0
+			r: 50
+			b: 100
+			l: 50
+		margin2 =
+			t: 250
+			r: 50
+			b: 20
+			l: 50
+		w = wOrig - margin.l - margin.r
+		h = hOrig - margin.t - margin.b
+		h2 = hOrig - margin2.t - margin2.b
 
-		w = 500
-		h = 100 # %
+		color = d3.scale.category10() # 20 avail
 
-		scalerX = d3.scale.ordinal()
-				.rangeRoundBands([0, w], .5, .1) # interval, padding, outerPadding, 0~1, 0.5 = band width = padding width
-		scalerY = d3.scale.linear()
-				.range([h, 0]) # %
+		x = d3.time.scale().range([0, w])
+		x2 = d3.time.scale().range([0, w])
+		y = d3.scale.linear().range([h, 0])
+		y2 = d3.scale.linear().range([h2, 0])
 
-		chart = d3.select(".ca-chart-line")
-				.attr("width", w)
-				.attr("height", "#{h}%")
+		axisX = d3.svg.axis().scale(x).orient("bottom")
+		axisX2 = d3.svg.axis().scale(x2).orient("bottom")
+		axisY = d3.svg.axis()
+				.scale(y)
+				.orient("left")
+				.ticks(10, "$")
 
-		successCb = (data) ->
+		line = d3.svg.line()
+				.interpolate("basis")
+				.x((d) -> x(d.date))
+				.y((d) -> y(d.close))
+		line2 = d3.svg.line()
+				.interpolate("basis")
+				.x((d) -> x2(d.date))
+				.y((d) -> y2(d.close))
+
+		chart = d3.select(chartCanvas)
+				.attr("width", w + margin.l + margin.r)
+				.attr("height", h + margin.t + margin.b)
+
+		focus = chart.append("g")
+				.attr("transform", "translate(#{ margin.l }, #{ margin.t })")
+		context = chart.append("g")
+				.attr("transform", "translate(#{ margin2.l }, #{ margin2.t })")
+
+		renderCb = (resolved) ->
+			_data = resolved.data
+			_startTimeData = resolved.startTimeData
+			_startTimeChart = moment()
+
 			scope.dataLoaded = true
+			_dataLoadT = moment.duration(_startTimeChart.diff(_startTimeData), 'ms').asSeconds()
 
-			max = d3.max(data, (d) -> d.frequency) # d = row data, i = index
-			scalerX.domain(data.map((d) -> d.letter))
-			scalerY.domain([0, max])
+			# ===========================
+			# render all
 
-			bar = chart.selectAll("g")
-					.data(data)
-					.enter().append("g")
-						.attr("transform", (d, i) -> "translate(#{scalerX(d.letter)}, 0)") # translate x, y
+			color.domain(d3.keys(_data[0]).filter((key) -> key is "exchange"))
 
-			bar.append("rect")
-					.attr("y", (d) -> "#{scalerY(d.frequency)}%")
-					.attr("height", (d) -> "#{h - scalerY(d.frequency)}%") # calc(vw - px) doesnt work in safari
-					.attr("width", scalerX.rangeBand())
+			_data = d3.nest().key((d) -> d.exchange).entries(_data)
 
-			bar.append("text")
-					.attr("x", scalerX.rangeBand() / 2)
-					.attr("y", (d) -> "#{scalerY(d.frequency) - 5}%")
-					.attr("dy", ".75em")
-					.text((d) -> d.letter)
+			xMin = d3.min(_data, (d) -> d3.min(d.values, (d) -> d.date))
+			xMax = d3.max(_data, (d) -> d3.max(d.values, (d) -> d.date))
+			yMax = d3.max(_data, (d) -> d3.max(d.values, (d) -> d.close))
+			x.domain([xMin, xMax])
+			y.domain([0, yMax])
+			x2.domain(x.domain())
+			y2.domain(y.domain())
+
+			focus.append("g")
+					.attr("class", "axis x1")
+					.attr("transform", "translate(0, #{ h })")
+					.call(axisX)
+
+			focus.append("g")
+					.attr("class", "axis y1")
+					.call(axisY)
+				.append("text")
+					.attr("class", "axis label")
+					.attr("transform", "rotate(-90)")
+					.attr("y", 6)
+					.attr("dy", "1em") # shift along y axis
+					.text("per Bitcoin")
+
+			focusExchanges = focus.selectAll(".exchange")
+					.data(_data, (d) -> d.key)
+				.enter().append("g")
+					.attr("class", "exchange")
+
+			focusExchanges.append("path")
+					.attr("class", "line")
+					.attr("d", (d) -> line(d.values))
+					.style("stroke", (d) -> color(d.key))
+
+			# ============================
+
+			context.append("g")
+					.attr("class", "axis x2")
+					.attr("transform", "translate(0, #{ h2 })")
+					.call(axisX2)
+
+			context.append("g")
+					.attr("class", "x brush")
+					.call(brush)
+				.selectAll("rect")
+					.attr("y", -6)
+					.attr("height", h2 + 7)
+
+			contextExchanges = context.selectAll(".exchange")
+					.data(_data, (d) -> d.key)
+				.enter().append("g")
+					.attr("class", "exchange")
+
+			contextExchanges.append("path")
+					.attr("class", "line")
+					.attr("d", (d) -> line2(d.values))
+					.style("stroke", (d) -> color(d.key))
+
+			# ============================
+
+			scope.chartProcessed = true
+			_chartProcessT = moment.duration(moment().diff(_startTimeChart), 'ms').asSeconds()
 
 			return
 
+		brushed = () ->
+			x.domain(if brush.empty() then x2.domain() else brush.extent())
+#			y.domain(if brush.empty() then y2.domain() else brush.extent())
+			focus.selectAll("path.line").attr("d", (d) -> line(d.values))
+			focus.select(".x1").call(axisX)
+			focus.select(".y1").call(axisY)
+			return
+		brush = d3.svg.brush().x(x2).on("brush", brushed)
+
 		errorCb = (what) ->
-			console.log(what)
+			console.log(what.msg)
+			console.log(what.err)
 			return
 
 		notifyCb = (what) ->
 			console.log(what)
 			return
 
-		forceNum = (d) ->
-			d.frequency = +d.frequency
+		dataParser = (d) ->
+			d.date = d3.time.format("%m/%d/%y").parse(d.date) # %x doesn't work b/c uses %Y which has century previx
+			d.high = +d.high
+			d.low = +d.low
+			d.close = +d.close
+			d.volume = +d.volume
 			d
 
-		d3tsv = (uri) ->
+		d3LoadData = (uri) ->
+			_startTimeData = moment()
 			deferred = $q.defer()
-			d3.tsv uri, forceNum, (err, data) ->
+			d3.tsv uri, dataParser, (err, data) ->
 #				deferred.notify "working..."
 				if err?
-					deferred.reject "didn't work"
+					deferred.reject {msg: "didn't work", error: err, startTimeData: _startTimeData}
 				else
-					deferred.resolve data
+					deferred.resolve {msg: "worked", data: data, startTimeData: _startTimeData}
 				return
 			deferred.promise
 
-		promise = d3tsv(scope.data)
-		promise.then(successCb, errorCb, notifyCb)
+		promise = d3LoadData(scope.data)
+		promise.then(renderCb, errorCb, notifyCb)
 
 		return

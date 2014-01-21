@@ -1,10 +1,9 @@
-<div class="ca-loader" ng-hide="dataLoaded">
+<div class="ca-loader" ng-hide="chartProcessed">
 	<i class="fa fa-refresh fa-spin fa-5x"></i>
 </div>
 
-<div class="wrapper ca-blur" ng-class="dataLoaded ? 'disabled' : ''">
+<div class="ca-chart-line ca-blur" ng-class="chartProcessed ? 'disabled' : ''">
 
-	<svg class="ca-chart-line">
-	</svg>
+	<svg></svg>
 
 </div>

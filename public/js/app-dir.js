@@ -60,62 +60,150 @@
         data: "="
       },
       link: function(scope, ele, attrs) {
-        var chart, d3tsv, errorCb, forceNum, h, notifyCb, promise, scalerX, scalerY, successCb, w;
+        var axisX, axisX2, axisY, brush, brushed, chart, chartCanvas, color, context, d3LoadData, dataParser, errorCb, focus, h, h2, hOrig, line, line2, margin, margin2, notifyCb, promise, renderCb, w, wOrig, x, x2, y, y2;
         scope.dataLoaded = false;
         scope.chartProcessed = false;
-        w = 500;
-        h = 100;
-        scalerX = d3.scale.ordinal().rangeRoundBands([0, w], .5, .1);
-        scalerY = d3.scale.linear().range([h, 0]);
-        chart = d3.select(".ca-chart-line").attr("width", w).attr("height", "" + h + "%");
-        successCb = function(data) {
-          var bar, max;
-          scope.dataLoaded = true;
-          max = d3.max(data, function(d) {
-            return d.frequency;
-          });
-          scalerX.domain(data.map(function(d) {
-            return d.letter;
-          }));
-          scalerY.domain([0, max]);
-          bar = chart.selectAll("g").data(data).enter().append("g").attr("transform", function(d, i) {
-            return "translate(" + (scalerX(d.letter)) + ", 0)";
-          });
-          bar.append("rect").attr("y", function(d) {
-            return "" + (scalerY(d.frequency)) + "%";
-          }).attr("height", function(d) {
-            return "" + (h - scalerY(d.frequency)) + "%";
-          }).attr("width", scalerX.rangeBand());
-          bar.append("text").attr("x", scalerX.rangeBand() / 2).attr("y", function(d) {
-            return "" + (scalerY(d.frequency) - 5) + "%";
-          }).attr("dy", ".75em").text(function(d) {
-            return d.letter;
-          });
+        chartCanvas = ele[0].querySelector(".ca-chart-line").children[0];
+        wOrig = d3.select(chartCanvas).node().offsetWidth;
+        hOrig = d3.select(chartCanvas).node().offsetHeight;
+        margin = {
+          t: 0,
+          r: 50,
+          b: 100,
+          l: 50
         };
+        margin2 = {
+          t: 250,
+          r: 50,
+          b: 20,
+          l: 50
+        };
+        w = wOrig - margin.l - margin.r;
+        h = hOrig - margin.t - margin.b;
+        h2 = hOrig - margin2.t - margin2.b;
+        color = d3.scale.category10();
+        x = d3.time.scale().range([0, w]);
+        x2 = d3.time.scale().range([0, w]);
+        y = d3.scale.linear().range([h, 0]);
+        y2 = d3.scale.linear().range([h2, 0]);
+        axisX = d3.svg.axis().scale(x).orient("bottom");
+        axisX2 = d3.svg.axis().scale(x2).orient("bottom");
+        axisY = d3.svg.axis().scale(y).orient("left").ticks(10, "$");
+        line = d3.svg.line().interpolate("basis").x(function(d) {
+          return x(d.date);
+        }).y(function(d) {
+          return y(d.close);
+        });
+        line2 = d3.svg.line().interpolate("basis").x(function(d) {
+          return x2(d.date);
+        }).y(function(d) {
+          return y2(d.close);
+        });
+        chart = d3.select(chartCanvas).attr("width", w + margin.l + margin.r).attr("height", h + margin.t + margin.b);
+        focus = chart.append("g").attr("transform", "translate(" + margin.l + ", " + margin.t + ")");
+        context = chart.append("g").attr("transform", "translate(" + margin2.l + ", " + margin2.t + ")");
+        renderCb = function(resolved) {
+          var contextExchanges, focusExchanges, xMax, xMin, yMax, _chartProcessT, _data, _dataLoadT, _startTimeChart, _startTimeData;
+          _data = resolved.data;
+          _startTimeData = resolved.startTimeData;
+          _startTimeChart = moment();
+          scope.dataLoaded = true;
+          _dataLoadT = moment.duration(_startTimeChart.diff(_startTimeData), 'ms').asSeconds();
+          color.domain(d3.keys(_data[0]).filter(function(key) {
+            return key === "exchange";
+          }));
+          _data = d3.nest().key(function(d) {
+            return d.exchange;
+          }).entries(_data);
+          xMin = d3.min(_data, function(d) {
+            return d3.min(d.values, function(d) {
+              return d.date;
+            });
+          });
+          xMax = d3.max(_data, function(d) {
+            return d3.max(d.values, function(d) {
+              return d.date;
+            });
+          });
+          yMax = d3.max(_data, function(d) {
+            return d3.max(d.values, function(d) {
+              return d.close;
+            });
+          });
+          x.domain([xMin, xMax]);
+          y.domain([0, yMax]);
+          x2.domain(x.domain());
+          y2.domain(y.domain());
+          focus.append("g").attr("class", "axis x1").attr("transform", "translate(0, " + h + ")").call(axisX);
+          focus.append("g").attr("class", "axis y1").call(axisY).append("text").attr("class", "axis label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "1em").text("per Bitcoin");
+          focusExchanges = focus.selectAll(".exchange").data(_data, function(d) {
+            return d.key;
+          }).enter().append("g").attr("class", "exchange");
+          focusExchanges.append("path").attr("class", "line").attr("d", function(d) {
+            return line(d.values);
+          }).style("stroke", function(d) {
+            return color(d.key);
+          });
+          context.append("g").attr("class", "axis x2").attr("transform", "translate(0, " + h2 + ")").call(axisX2);
+          context.append("g").attr("class", "x brush").call(brush).selectAll("rect").attr("y", -6).attr("height", h2 + 7);
+          contextExchanges = context.selectAll(".exchange").data(_data, function(d) {
+            return d.key;
+          }).enter().append("g").attr("class", "exchange");
+          contextExchanges.append("path").attr("class", "line").attr("d", function(d) {
+            return line2(d.values);
+          }).style("stroke", function(d) {
+            return color(d.key);
+          });
+          scope.chartProcessed = true;
+          _chartProcessT = moment.duration(moment().diff(_startTimeChart), 'ms').asSeconds();
+        };
+        brushed = function() {
+          x.domain(brush.empty() ? x2.domain() : brush.extent());
+          focus.selectAll("path.line").attr("d", function(d) {
+            return line(d.values);
+          });
+          focus.select(".x1").call(axisX);
+          focus.select(".y1").call(axisY);
+        };
+        brush = d3.svg.brush().x(x2).on("brush", brushed);
         errorCb = function(what) {
-          console.log(what);
+          console.log(what.msg);
+          console.log(what.err);
         };
         notifyCb = function(what) {
           console.log(what);
         };
-        forceNum = function(d) {
-          d.frequency = +d.frequency;
+        dataParser = function(d) {
+          d.date = d3.time.format("%m/%d/%y").parse(d.date);
+          d.high = +d.high;
+          d.low = +d.low;
+          d.close = +d.close;
+          d.volume = +d.volume;
           return d;
         };
-        d3tsv = function(uri) {
-          var deferred;
+        d3LoadData = function(uri) {
+          var deferred, _startTimeData;
+          _startTimeData = moment();
           deferred = $q.defer();
-          d3.tsv(uri, forceNum, function(err, data) {
+          d3.tsv(uri, dataParser, function(err, data) {
             if (err != null) {
-              deferred.reject("didn't work");
+              deferred.reject({
+                msg: "didn't work",
+                error: err,
+                startTimeData: _startTimeData
+              });
             } else {
-              deferred.resolve(data);
+              deferred.resolve({
+                msg: "worked",
+                data: data,
+                startTimeData: _startTimeData
+              });
             }
           });
           return deferred.promise;
         };
-        promise = d3tsv(scope.data);
-        promise.then(successCb, errorCb, notifyCb);
+        promise = d3LoadData(scope.data);
+        promise.then(renderCb, errorCb, notifyCb);
       }
     };
   });

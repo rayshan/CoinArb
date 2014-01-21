@@ -11,7 +11,7 @@
 @font-family-sans-serif: 'Droid Sans', sans-serif;
 
 // custom
-@ca-split: .70; // top
+@ca-split: .60; // top
 
 @ca-dark-1: lighten(black, 5%);
 @ca-dark-2: lighten(black, 10%);
@@ -135,7 +135,8 @@ div#wrapper {
 
 	section#ca-chart {
 		position: relative;
-		height: (1 - @ca-split) * 100vh;
+		height: (1 - @ca-split - 0.01) * 100vh;
+		// hack to remove scroll bar, otherwise returns 30.0000000001 vh wtf
 	}
 }
 
@@ -210,13 +211,42 @@ div.ca-blur {
 }
 
 .ca-chart-line {
-	rect {
-		fill: steelblue;
+	cursor: crosshair;
+
+	.line {
+		fill: none;
+		stroke: @ca-dark-3;
+		stroke-width: 1.5px;
+		// crispEdges or 1px line look bad due to curved lines
+
+		&:hover {
+			stroke: @ca-dark-4;
+		}
 	}
 
-	text {
-		fill: white;
-		font: 10px sans-serif;
-		text-anchor: middle;
+	.axis {
+		text {
+			font: 10px sans-serif;
+			fill: @ca-light-2;
+		}
+
+		.label {
+			fill: @ca-light-2;
+			font: 10px sans-serif;
+			text-anchor: end;
+		}
+
+		path, line {
+			fill: none;
+			stroke: @ca-light-2;
+			shape-rendering: crispEdges;
+		}
 	}
+	.brush .extent {
+		fill: black;
+		stroke: @ca-dark-3;
+		fill-opacity: .5;
+		shape-rendering: crispEdges;
+	}
+
 }
