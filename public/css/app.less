@@ -215,13 +215,8 @@ div.ca-blur {
 
 	.line {
 		fill: none;
-		stroke: @ca-dark-3;
 		stroke-width: 1.5px;
 		// crispEdges or 1px line look bad due to curved lines
-
-		&:hover {
-			stroke: @ca-dark-4;
-		}
 	}
 
 	.axis {
@@ -242,11 +237,32 @@ div.ca-blur {
 			shape-rendering: crispEdges;
 		}
 	}
+
 	.brush .extent {
 		fill: black;
 		stroke: @ca-dark-3;
 		fill-opacity: .5;
 		shape-rendering: crispEdges;
+	}
+
+	.legend {
+		rect {
+			fill:white;
+			stroke:black;
+			opacity:0.8;
+		}
+		text {
+			font: 10px sans-serif;
+			fill: @ca-light-2;
+		}
+	}
+
+	#info-box {
+		text {
+			font: 10px sans-serif;
+			fill: @ca-light-2;
+			text-anchor: start;
+		}
 	}
 
 }

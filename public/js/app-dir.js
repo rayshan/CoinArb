@@ -52,7 +52,7 @@
     };
   });
 
-  angular.module('app').directive('caChart', function($q) {
+  angular.module('app').directive('caChart', function($q, $filter) {
     return {
       templateUrl: 'partials/ca-chart.html',
       restrict: 'E',
@@ -60,7 +60,7 @@
         data: "="
       },
       link: function(scope, ele, attrs) {
-        var axisX, axisX2, axisY, brush, brushed, chart, chartCanvas, color, context, d3LoadData, dataParser, errorCb, focus, h, h2, hOrig, line, line2, margin, margin2, notifyCb, promise, renderCb, w, wOrig, x, x2, y, y2;
+        var axisX, axisX2, axisY, brush, brushed, chart, chartCanvas, color, context, d3LoadData, dataParser, errorCb, focus, h, h2, hOrig, infoBox, line, line2, margin, margin2, notifyCb, promise, renderCb, w, wOrig, x, x2, y, y2;
         scope.dataLoaded = false;
         scope.chartProcessed = false;
         chartCanvas = ele[0].querySelector(".ca-chart-line").children[0];
@@ -99,11 +99,21 @@
         }).y(function(d) {
           return y2(d.close);
         });
+        brushed = function() {
+          x.domain(brush.empty() ? x2.domain() : brush.extent());
+          focus.selectAll("path.line").attr("d", function(d) {
+            return line(d.values);
+          });
+          focus.select(".x1").call(axisX);
+        };
+        brush = d3.svg.brush().x(x2).on("brush", brushed);
         chart = d3.select(chartCanvas).attr("width", w + margin.l + margin.r).attr("height", h + margin.t + margin.b);
-        focus = chart.append("g").attr("transform", "translate(" + margin.l + ", " + margin.t + ")");
-        context = chart.append("g").attr("transform", "translate(" + margin2.l + ", " + margin2.t + ")");
+        chart.append("defs").append("clipPath").attr("id", "focus-clip").append("rect").attr("width", w).attr("height", h);
+        focus = chart.append("g").attr('id', 'focus').attr("transform", "translate(" + margin.l + ", " + margin.t + ")");
+        context = chart.append("g").attr('id', 'context').attr("transform", "translate(" + margin2.l + ", " + margin2.t + ")");
+        infoBox = chart.append("g").attr('id', 'info-box').attr("transform", "translate(" + (margin.l * 2) + ", 0)");
         renderCb = function(resolved) {
-          var contextExchanges, focusExchanges, xMax, xMin, yMax, _chartProcessT, _data, _dataLoadT, _startTimeChart, _startTimeData;
+          var contextExchanges, focusExchanges, xMax, xMin, yMax, _chartProcessT, _data, _dataLoadT, _dataNested, _startTimeChart, _startTimeData, _tTotal;
           _data = resolved.data;
           _startTimeData = resolved.startTimeData;
           _startTimeChart = moment();
@@ -112,20 +122,20 @@
           color.domain(d3.keys(_data[0]).filter(function(key) {
             return key === "exchange";
           }));
-          _data = d3.nest().key(function(d) {
+          _dataNested = d3.nest().key(function(d) {
             return d.exchange;
           }).entries(_data);
-          xMin = d3.min(_data, function(d) {
+          xMin = d3.min(_dataNested, function(d) {
             return d3.min(d.values, function(d) {
               return d.date;
             });
           });
-          xMax = d3.max(_data, function(d) {
+          xMax = d3.max(_dataNested, function(d) {
             return d3.max(d.values, function(d) {
               return d.date;
             });
           });
-          yMax = d3.max(_data, function(d) {
+          yMax = d3.max(_dataNested, function(d) {
             return d3.max(d.values, function(d) {
               return d.close;
             });
@@ -136,17 +146,17 @@
           y2.domain(y.domain());
           focus.append("g").attr("class", "axis x1").attr("transform", "translate(0, " + h + ")").call(axisX);
           focus.append("g").attr("class", "axis y1").call(axisY).append("text").attr("class", "axis label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "1em").text("per Bitcoin");
-          focusExchanges = focus.selectAll(".exchange").data(_data, function(d) {
+          focusExchanges = focus.selectAll(".exchange").data(_dataNested, function(d) {
             return d.key;
-          }).enter().append("g").attr("class", "exchange");
-          focusExchanges.append("path").attr("class", "line").attr("d", function(d) {
+          }).enter().append("g").attr("clip-path", "url(#focus-clip)").attr("class", "exchange");
+          focusExchanges.append("path").attr("d", function(d) {
             return line(d.values);
-          }).style("stroke", function(d) {
+          }).attr("class", "line").style("stroke", function(d) {
             return color(d.key);
           });
           context.append("g").attr("class", "axis x2").attr("transform", "translate(0, " + h2 + ")").call(axisX2);
           context.append("g").attr("class", "x brush").call(brush).selectAll("rect").attr("y", -6).attr("height", h2 + 7);
-          contextExchanges = context.selectAll(".exchange").data(_data, function(d) {
+          contextExchanges = context.selectAll(".exchange").data(_dataNested, function(d) {
             return d.key;
           }).enter().append("g").attr("class", "exchange");
           contextExchanges.append("path").attr("class", "line").attr("d", function(d) {
@@ -156,19 +166,12 @@
           });
           scope.chartProcessed = true;
           _chartProcessT = moment.duration(moment().diff(_startTimeChart), 'ms').asSeconds();
+          _tTotal = $filter("round")(_dataLoadT + _chartProcessT);
+          infoBox.append("text").attr("dy", "1em").text("Generated by CoinArb in " + _tTotal + " s.");
         };
-        brushed = function() {
-          x.domain(brush.empty() ? x2.domain() : brush.extent());
-          focus.selectAll("path.line").attr("d", function(d) {
-            return line(d.values);
-          });
-          focus.select(".x1").call(axisX);
-          focus.select(".y1").call(axisY);
-        };
-        brush = d3.svg.brush().x(x2).on("brush", brushed);
         errorCb = function(what) {
           console.log(what.msg);
-          console.log(what.err);
+          console.log(what.error);
         };
         notifyCb = function(what) {
           console.log(what);

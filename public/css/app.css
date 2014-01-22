@@ -6231,11 +6231,7 @@ div.ca-blur.disabled {
 }
 .ca-chart-line .line {
   fill: none;
-  stroke: #333333;
   stroke-width: 1.5px;
-}
-.ca-chart-line .line:hover {
-  stroke: #4d4d4d;
 }
 .ca-chart-line .axis text {
   font: 10px sans-serif;
@@ -6257,4 +6253,18 @@ div.ca-blur.disabled {
   stroke: #333333;
   fill-opacity: .5;
   shape-rendering: crispEdges;
+}
+.ca-chart-line .legend rect {
+  fill: white;
+  stroke: black;
+  opacity: 0.8;
+}
+.ca-chart-line .legend text {
+  font: 10px sans-serif;
+  fill: #808080;
+}
+.ca-chart-line #info-box text {
+  font: 10px sans-serif;
+  fill: #808080;
+  text-anchor: start;
 }
