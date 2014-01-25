@@ -2,9 +2,9 @@
 (function() {
   angular.module('app', ['ngResource', 'ngAnimate', 'btford.socket-io', 'poller']);
 
-  angular.module('app').run(function(tickerSvc) {});
+  angular.module('app').run(function(caTickerSvc) {});
 
-  angular.module('app').factory('notificationSvc', function() {
+  angular.module('app').factory('caNotificationSvc', function() {
     return {
       enabled: false,
       create: function(data) {
@@ -19,7 +19,7 @@
     };
   });
 
-  angular.module('app').factory('checkAndCopySvc', function($rootScope, exchangeSvc, notificationSvc) {
+  angular.module('app').factory('caCheckAndCopySvc', function($rootScope, exchangeSvc, caNotificationSvc) {
     return {
       process: function(id, current) {
         var changed, data, now;
@@ -30,8 +30,8 @@
           current.updateTime = now;
           data.current = {};
           angular.copy(current, data.current);
-          if (notificationSvc.enabled) {
-            notificationSvc.create(exchangeSvc.data[id].fetched.current.last);
+          if (caNotificationSvc.enabled) {
+            caNotificationSvc.create(exchangeSvc.data[id].fetched.current.last);
           }
           $rootScope.$broadcast("tickerUpdate");
         } else {
@@ -43,8 +43,8 @@
             }
             angular.copy(data.current, data.previous);
             angular.copy(current, data.current);
-            if (notificationSvc.enabled) {
-              notificationSvc.create(exchangeSvc.data[id].fetched.current.last);
+            if (caNotificationSvc.enabled) {
+              caNotificationSvc.create(exchangeSvc.data[id].fetched.current.last);
             }
             $rootScope.$broadcast("tickerUpdate");
           }
@@ -53,7 +53,7 @@
     };
   });
 
-  angular.module('app').factory('tickerSvc', function($resource, $filter, poller, socketSvc, exchangeSvc, checkAndCopySvc) {
+  angular.module('app').factory('caTickerSvc', function($resource, $filter, poller, caSocketSvc, exchangeSvc, caCheckAndCopySvc) {
     var USDCNY, data, errorCb, myResource, name, notifyCb, pollers, _i, _len, _ref;
     USDCNY = 6.05;
     pollers = [];
@@ -66,14 +66,14 @@
               last: $filter('round')(res.ticker.last / USDCNY),
               spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY)
             };
-            checkAndCopySvc.process(id, current);
+            caCheckAndCopySvc.process(id, current);
             break;
           default:
             current = {
               last: $filter('round')(res[id].rates.last),
               spread: $filter('round')(res[id].rates.bid - res[id].rates.ask)
             };
-            checkAndCopySvc.process(id, current);
+            caCheckAndCopySvc.process(id, current);
         }
       };
     };
@@ -94,7 +94,7 @@
           })
         });
       } else {
-        socketSvc.process(data);
+        caSocketSvc.process(data);
       }
     }
     for (_i = 0, _len = pollers.length; _i < _len; _i++) {
@@ -103,7 +103,7 @@
     }
   });
 
-  angular.module('app').factory('socketSvc', function($rootScope, $filter, socketFactory, checkAndCopySvc) {
+  angular.module('app').factory('caSocketSvc', function($rootScope, $filter, socketFactory, caCheckAndCopySvc) {
     var unsubscribe;
     unsubscribe = {
       depthBTCUSD: {
@@ -135,7 +135,7 @@
               updateTime: null,
               error: null
             };
-            checkAndCopySvc.process(data.id, current);
+            caCheckAndCopySvc.process(data.id, current);
           }
         });
         socket.on("socket:error", function(event, data) {
@@ -147,7 +147,7 @@
     };
   });
 
-  angular.module('app').controller('AppCtrl', function($scope, $timeout, exchangeSvc) {
+  angular.module('app').controller('CaAppCtrl', function($scope, $timeout, exchangeSvc) {
     var _this = this;
     this.data = exchangeSvc.data;
     this.dataChart = "data/data.tsv";

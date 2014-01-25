@@ -5,11 +5,11 @@ angular.module('app', [
 	'poller'
 ])
 
-angular.module('app').run (tickerSvc) ->
+angular.module('app').run (caTickerSvc) ->
 	# excute immediately on app bootstrap
 	return
 
-angular.module('app').factory 'notificationSvc', () ->
+angular.module('app').factory 'caNotificationSvc', () ->
 	enabled: false
 	create:
 		(data) ->
@@ -21,7 +21,7 @@ angular.module('app').factory 'notificationSvc', () ->
 			}
 			return
 
-angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notificationSvc) ->
+angular.module('app').factory 'caCheckAndCopySvc', ($rootScope, exchangeSvc, caNotificationSvc) ->
 	process: (id, current) ->
 		now = moment()
 		data = exchangeSvc.data[id].fetched
@@ -33,8 +33,8 @@ angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notif
 			data.current = {}
 			angular.copy(current, data.current)
 
-			if notificationSvc.enabled
-				notificationSvc.create(exchangeSvc.data[id].fetched.current.last)
+			if caNotificationSvc.enabled
+				caNotificationSvc.create(exchangeSvc.data[id].fetched.current.last)
 
 			# $rootScope.$broadcast("#{id}Update")
 			$rootScope.$broadcast("tickerUpdate")
@@ -46,15 +46,15 @@ angular.module('app').factory 'checkAndCopySvc', ($rootScope, exchangeSvc, notif
 				angular.copy(data.current, data.previous)
 				angular.copy(current, data.current)
 
-				if notificationSvc.enabled
-					notificationSvc.create(exchangeSvc.data[id].fetched.current.last)
+				if caNotificationSvc.enabled
+					caNotificationSvc.create(exchangeSvc.data[id].fetched.current.last)
 
 				# $rootScope.$broadcast("#{id}Update")
 				$rootScope.$broadcast("tickerUpdate")
 
 		return
 
-angular.module('app').factory 'tickerSvc', ($resource, $filter, poller, socketSvc, exchangeSvc, checkAndCopySvc) ->
+angular.module('app').factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc, caCheckAndCopySvc) ->
 	USDCNY = 6.05
 	pollers = []
 
@@ -66,19 +66,19 @@ angular.module('app').factory 'tickerSvc', ($resource, $filter, poller, socketSv
 						last: $filter('round')(res.ticker.last / USDCNY)
 						spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY)
 					#						error: null
-					checkAndCopySvc.process(id, current)
+					caCheckAndCopySvc.process(id, current)
 #				when "btce"
 #					current =
 #						last: $filter('round')(res.ticker.last)
 #						spread: $filter('round')(res.ticker.buy - res.ticker.sell)
 #					#						error: null
-#					checkAndCopySvc.process(id, current)
+#					caCheckAndCopySvc.process(id, current)
 				else # all bitcoinaverage api
 					current =
 						last: $filter('round')(res[id].rates.last)
 						spread: $filter('round')(res[id].rates.bid - res[id].rates.ask)
 					#						error: null
-					checkAndCopySvc.process(id, current)
+					caCheckAndCopySvc.process(id, current)
 			return
 
 	errorCb = (reason) ->
@@ -99,14 +99,14 @@ angular.module('app').factory 'tickerSvc', ($resource, $filter, poller, socketSv
 					}
 				}
 			)
-		else socketSvc.process(data)
+		else caSocketSvc.process(data)
 
 	for poller in pollers
 		poller.item.promise.then(null, errorCb, notifyCb(poller.id))
 
 	return
 
-angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, checkAndCopySvc) ->
+angular.module('app').factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySvc) ->
 	unsubscribe =
 		depthBTCUSD:
 			op: 'unsubscribe'
@@ -140,7 +140,7 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 					# last is the same as last_local
 					updateTime: null
 					error: null
-				checkAndCopySvc.process(data.id, current)
+				caCheckAndCopySvc.process(data.id, current)
 			return
 
 		socket.on "socket:error", (event, data) ->
@@ -151,7 +151,7 @@ angular.module('app').factory 'socketSvc', ($rootScope, $filter, socketFactory, 
 
 		return
 
-angular.module('app').controller 'AppCtrl', ($scope, $timeout, exchangeSvc) ->
+angular.module('app').controller 'CaAppCtrl', ($scope, $timeout, exchangeSvc) ->
 #	fireDigestEverySecond = () ->
 #		$timeout fireDigestEverySecond , 3000
 #		return
