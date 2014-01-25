@@ -12,7 +12,7 @@
 #		updateTime: null
 #		error: null
 
-angular.module('app').factory 'exchangeSvc', () ->
+angular.module('CaApp').factory 'exchangeSvc', () ->
 	data =
 		mtgox:
 			id: 'mtgox' # based on bitcoinaverage

@@ -1,15 +1,15 @@
-angular.module('app', [
+angular.module('CaApp', [
 	'ngResource'
 	'ngAnimate'
 	'btford.socket-io'
 	'poller'
 ])
 
-angular.module('app').run (caTickerSvc) ->
+angular.module('CaApp').run (caTickerSvc) ->
 	# excute immediately on app bootstrap
 	return
 
-angular.module('app').factory 'caNotificationSvc', () ->
+angular.module('CaApp').factory 'caNotificationSvc', () ->
 	enabled: false
 	create:
 		(data) ->
@@ -21,7 +21,7 @@ angular.module('app').factory 'caNotificationSvc', () ->
 			}
 			return
 
-angular.module('app').factory 'caCheckAndCopySvc', ($rootScope, exchangeSvc, caNotificationSvc) ->
+angular.module('CaApp').factory 'caCheckAndCopySvc', ($rootScope, exchangeSvc, caNotificationSvc) ->
 	process: (id, current) ->
 		now = moment()
 		data = exchangeSvc.data[id].fetched
@@ -54,7 +54,7 @@ angular.module('app').factory 'caCheckAndCopySvc', ($rootScope, exchangeSvc, caN
 
 		return
 
-angular.module('app').factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc, caCheckAndCopySvc) ->
+angular.module('CaApp').factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc, caCheckAndCopySvc) ->
 	USDCNY = 6.05
 	pollers = []
 
@@ -81,10 +81,7 @@ angular.module('app').factory 'caTickerSvc', ($resource, $filter, poller, caSock
 					caCheckAndCopySvc.process(id, current)
 			return
 
-	errorCb = (reason) ->
-		throw "poller or resource failed"
-		console.log(reason)
-		return
+	errorCb = (reason) -> throw "poller or resource failed"; console.log(reason); return
 
 	for name, data of exchangeSvc.data
 		if data.api.type == "REST"
@@ -106,7 +103,7 @@ angular.module('app').factory 'caTickerSvc', ($resource, $filter, poller, caSock
 
 	return
 
-angular.module('app').factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySvc) ->
+angular.module('CaApp').factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySvc) ->
 	unsubscribe =
 		depthBTCUSD:
 			op: 'unsubscribe'
@@ -151,14 +148,8 @@ angular.module('app').factory 'caSocketSvc', ($rootScope, $filter, socketFactory
 
 		return
 
-angular.module('app').controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
-#	fireDigestEverySecond = () ->
-#		$timeout fireDigestEverySecond , 3000
-#		return
-
-	@getTime = (timeZone) ->
-		now = moment()
-		now.format('HH:mm:ss')
+angular.module('CaApp').controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
+	@getTime = (timeZone) -> now = moment(); now.format('HH:mm:ss')
 
 	@showTime = () ->
 		true
@@ -182,10 +173,7 @@ angular.module('app').controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) -
 
 	@baseline = "mtgox"
 	@baselineBest = null
-	@setBaseline = (id) ->
-		@baseline = id
-		$scope.$broadcast "baselineSet"
-		return
+	@setBaseline = (id) -> @baseline = id; $scope.$broadcast "baselineSet"; return
 	@getBaselineBest = () ->
 		_lasts = []
 		_highest = null
@@ -208,13 +196,8 @@ angular.module('app').controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) -
 		else throw "Must have at least 1 exchange in display."
 		return
 
-	$scope.$on "tickerUpdate", () =>
-		@data = exchangeSvc.data
-		@getBaselineBest()
-		return
+	$scope.$on "tickerUpdate", () => @data = exchangeSvc.data; @getBaselineBest(); return
 
-	$scope.$on "baselineSet", () =>
-		@getBaselineBest()
-		return
+	$scope.$on "baselineSet", () => @getBaselineBest(); return
 
 	return

@@ -23,8 +23,8 @@
 @ca-adj-bs-color: 40%; // darken by this to fit dark theme better
 
 @ca-easing-func: linear;
-@ca-easing-func-2: cubic-bezier(.55,-0.26,.27,.96);
-@ca-easing-func-3: cubic-bezier(0.250, 0.250, 0.115, 1.445);
+@ca-easing-func-2: cubic-bezier(.55,-0.26,.27,.96); // ray's self built
+@ca-easing-func-3: cubic-bezier(0.250, 0.250, 0.115, 1.445); // looks the best
 
 body {
 	background-color: @ca-dark-1;
@@ -33,7 +33,7 @@ body {
 
 nav {
 	position: absolute;
-	width: 50px;
+	width: 60px;
 	height: 100%;
 	background-color: black;
 	text-align: center;
@@ -44,7 +44,7 @@ nav {
 
 	div.ca-nav-item {
 		width: 100%;
-		line-height: 50px;
+		line-height: 60px;
 
 		i {
 			vertical-align: middle;
@@ -58,7 +58,7 @@ nav {
 }
 
 div#wrapper {
-	margin-left: 50px;
+	margin-left: 60px;
 
 	section#ca-exchanges {
 		.make-row();
@@ -182,24 +182,24 @@ a.ca-btn {
 }
 
 div.ca-loader {
-	z-index: 999;
-	width: 70px;
-	height: 70px;
+//	z-index: 999;
+	width: 80px;
+	height: 80px;
 	margin: auto;
-	overflow: auto;
+//	overflow: auto;
 	position: absolute;
 	top: 0; left: 0; bottom: 0; right: 0;
-	text-align: center;
 
-	i {vertical-align: middle}
-
-	.transition(-webkit-transform 0.25s @ca-easing-func);
+	.transition(all 0.25s @ca-easing-func);
 
 	&.ng-hide-add, &.ng-hide-remove {
 		display: block!important;
 	}
 
-	&.ng-hide { .scale(0.75); }
+	&.ng-hide {
+		.scale(0.75);
+		opacity: 0.5;
+	}
 
 }
 

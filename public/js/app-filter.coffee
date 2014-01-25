@@ -1,4 +1,4 @@
-angular.module('app').filter 'pct', () ->
+angular.module('CaApp').filter 'pct', () ->
 #	countDecimals = (value) ->
 #		return 0 if Math.floor(value) is value
 #		return value.toString().split(".")[1].length or 0
@@ -11,12 +11,12 @@ angular.module('app').filter 'pct', () ->
 				"#{(input * 1).toFixed(1)} %"
 			else "#{(input * 1).toFixed(0)} %"
 
-angular.module('app').filter 'round', () ->
+angular.module('CaApp').filter 'round', () ->
 	(input) ->
 		return (input * 1).toFixed(2)
 		# input itself isn't recognized as num, not sure why, * 1 is a lot faster than Number()
 
-angular.module('app').filter 'toArray', () ->
+angular.module('CaApp').filter 'toArray', () ->
 	(input) ->
 		out = []
 		for i of input

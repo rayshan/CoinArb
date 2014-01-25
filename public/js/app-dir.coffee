@@ -1,4 +1,4 @@
-angular.module('app').directive 'caNumDisplay', ($animate) ->
+angular.module('CaApp').directive 'caNumDisplay', ($animate) ->
 	templateUrl: 'partials/ca-num-display.html'
 	replace: true
 	restrict: 'E'
@@ -37,7 +37,7 @@ angular.module('app').directive 'caNumDisplay', ($animate) ->
 
 		return
 
-angular.module('app').directive 'caChart', ($q, $filter) ->
+angular.module('CaApp').directive 'caChart', ($q, $filter) ->
 	templateUrl: 'partials/ca-chart.html'
 	restrict: 'E'
 	scope:
@@ -234,14 +234,9 @@ angular.module('app').directive 'caChart', ($q, $filter) ->
 
 			return
 
-		errorCb = (what) ->
-			console.log(what.msg)
-			console.log(what.error)
-			return
+		errorCb = (what) -> console.log(what.msg, what.error); return
 
-		notifyCb = (what) ->
-			console.log(what)
-			return
+		notifyCb = (what) -> console.log(what); return
 
 		dataParser = (d) ->
 			d.date = d3.time.format("%m/%d/%y").parse(d.date) # %x doesn't work b/c uses %Y which has century previx
@@ -267,3 +262,7 @@ angular.module('app').directive 'caChart', ($q, $filter) ->
 		promise.then(renderCb, errorCb, notifyCb)
 
 		return
+
+angular.module('CaApp').directive 'caSelectFocus', ($q, $filter) ->
+	#	with copy to clipboard button
+	return

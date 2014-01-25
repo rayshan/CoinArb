@@ -6008,7 +6008,7 @@ body {
 }
 nav {
   position: absolute;
-  width: 50px;
+  width: 60px;
   height: 100%;
   background-color: black;
   text-align: center;
@@ -6018,7 +6018,7 @@ nav div.ca-clock {
 }
 nav div.ca-nav-item {
   width: 100%;
-  line-height: 50px;
+  line-height: 60px;
 }
 nav div.ca-nav-item i {
   vertical-align: middle;
@@ -6028,7 +6028,7 @@ nav div.ca-nav-item:hover {
   color: #0d0d0d;
 }
 div#wrapper {
-  margin-left: 50px;
+  margin-left: 60px;
 }
 div#wrapper section#ca-exchanges {
   margin-left: 0;
@@ -6186,25 +6186,19 @@ a.ca-btn:hover {
   font-weight: normal;
 }
 div.ca-loader {
-  z-index: 999;
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   margin: auto;
-  overflow: auto;
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-  text-align: center;
-  -webkit-transition: -webkit-transform 0.25s linear;
-  -moz-transition: -webkit-transform 0.25s linear;
-  -o-transition: -webkit-transform 0.25s linear;
-  -ms-transition: -webkit-transform 0.25s linear;
-  transition: -webkit-transform 0.25s linear;
-}
-div.ca-loader i {
-  vertical-align: middle;
+  -webkit-transition: all 0.25s linear;
+  -moz-transition: all 0.25s linear;
+  -o-transition: all 0.25s linear;
+  -ms-transition: all 0.25s linear;
+  transition: all 0.25s linear;
 }
 div.ca-loader.ng-hide-add,
 div.ca-loader.ng-hide-remove {
@@ -6216,6 +6210,7 @@ div.ca-loader.ng-hide {
   -ms-transform: scale(0.75);
   -o-transform: scale(0.75);
   transform: scale(0.75);
+  opacity: 0.5;
 }
 div.ca-blur {
   -webkit-transition: all 0.35s linear;
