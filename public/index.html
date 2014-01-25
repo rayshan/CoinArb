@@ -13,6 +13,10 @@
 <body ng-controller="CaAppCtrl as app">
 
 <nav>
+	<div class="ca-clock">
+		<small>{{ app.getTime() }}</small>
+	</div>
+
 	<div class="ca-nav-item">
 		<i class="fa fa-question-circle fa-2x"></i>
 	</div>
@@ -80,7 +84,6 @@
 				<a ng-show="focus" class="ca-btn" type="button" ng-click="app.hide(exchange.id)"><i class="fa fa-times fa-5x"></i></a>
 			</div>
 
-			<!--<div ng-class="app.showTime() ? 'change' : ''" class="test"><span>{{ app.getTime() }}</span></div>-->
 		</div>
 	</section>
 

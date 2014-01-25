@@ -6013,6 +6013,9 @@ nav {
   background-color: black;
   text-align: center;
 }
+nav div.ca-clock {
+  font-family: 'Ubuntu Mono', monospace;
+}
 nav div.ca-nav-item {
   width: 100%;
   line-height: 50px;
@@ -6021,7 +6024,8 @@ nav div.ca-nav-item i {
   vertical-align: middle;
 }
 nav div.ca-nav-item:hover {
-  background-color: #0d0d0d;
+  background-color: #e6e6e6;
+  color: #0d0d0d;
 }
 div#wrapper {
   margin-left: 50px;

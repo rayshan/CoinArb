@@ -151,20 +151,21 @@ angular.module('app').factory 'caSocketSvc', ($rootScope, $filter, socketFactory
 
 		return
 
-angular.module('app').controller 'CaAppCtrl', ($scope, $timeout, exchangeSvc) ->
+angular.module('app').controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
 #	fireDigestEverySecond = () ->
 #		$timeout fireDigestEverySecond , 3000
 #		return
-#
-#	fireDigestEverySecond()
-#
-#	@getTime = (timeZone) ->
-#		now = moment()
-#		now.format('h:mm:ss a')
-#
-#	@showTime = () ->
+
+	@getTime = (timeZone) ->
+		now = moment()
+		now.format('HH:mm:ss')
+
+	@showTime = () ->
+		true
 #		now = moment()
 #		now.second() % 2 is 0
+
+	$interval @getTime, 1
 
 	@data = exchangeSvc.data
 	@dataChart = "data/data.tsv"

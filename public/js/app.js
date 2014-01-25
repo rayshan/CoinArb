@@ -147,8 +147,17 @@
     };
   });
 
-  angular.module('app').controller('CaAppCtrl', function($scope, $timeout, exchangeSvc) {
+  angular.module('app').controller('CaAppCtrl', function($scope, $interval, exchangeSvc) {
     var _this = this;
+    this.getTime = function(timeZone) {
+      var now;
+      now = moment();
+      return now.format('HH:mm:ss');
+    };
+    this.showTime = function() {
+      return true;
+    };
+    $interval(this.getTime, 1);
     this.data = exchangeSvc.data;
     this.dataChart = "data/data.tsv";
     this.showCount = function() {
