@@ -8,6 +8,8 @@
 
   app.controller('CaAppCtrl', function($scope, $interval, exchangeSvc) {
     var _this = this;
+    this.showExchanges = false;
+    this.showChart = true;
     this.getTime = function(timeZone) {
       var now;
       now = moment();

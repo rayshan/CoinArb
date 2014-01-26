@@ -41,7 +41,7 @@ dir.directive 'caNumDisplay', ($animate) ->
 
 		return
 
-dir.directive 'caChart', ($q, $filter) ->
+dir.directive 'caChart', ($q, $filter, caD3Svc) ->
 	templateUrl: 'partials/ca-chart.html'
 	restrict: 'E'
 	scope:
@@ -180,7 +180,6 @@ dir.directive 'caChart', ($q, $filter) ->
 			return
 
 		renderCb = (resolved) ->
-			_data = resolved.data
 			_startTimeData = resolved.startTimeData
 			_startTimeChart = moment()
 
@@ -190,9 +189,18 @@ dir.directive 'caChart', ($q, $filter) ->
 			# ===========================
 			# render all
 
-			color.domain(d3.keys(_data[0]).filter((key) -> key is "exchange"))
+			exchanges = Object.keys(d3.nest()
+					.key((d) -> d.exchange)
+					.rollup((leaves) -> return null) # just need to roll up, has to specify a f()
+					.map(resolved.data))
 
-			_dataNested = d3.nest().key((d) -> d.exchange).entries(_data)
+			# color.domain(d3.keys(_data[0]).filter((key) -> key is "exchange")) # just returns ['exchange'], not sure what for
+			color.domain(exchanges)
+			# color domain optional but a good idea for deterministic behavior, as inferring the domain from usage will be dependent on ordering
+
+			_dataNested = d3.nest()
+					.key((d) -> d.exchange) # group by this key
+					.entries(resolved.data) # apply to this data
 
 			xMin = d3.min(_dataNested, (d) -> d3.min(d.values, (d) -> d.date))
 			xMax = d3.max(_dataNested, (d) -> d3.max(d.values, (d) -> d.date))
@@ -233,6 +241,7 @@ dir.directive 'caChart', ($q, $filter) ->
 					.attr("class", "line focus") # focus:hover changes stroke-width
 					.style("stroke", (d) -> color(d.key))
 
+			# render legend
 			focus.append("g")
 					.attr("class", "legend")
 					.attr("transform", "translate(50,30)")

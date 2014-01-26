@@ -144,3 +144,11 @@ svc.factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySv
 			return
 
 		return
+
+svc.factory 'caD3Svc', ->
+	dFetch: ->
+		return
+	dProcess: ->
+		return
+	render: ->
+		return

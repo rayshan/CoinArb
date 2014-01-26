@@ -56,7 +56,7 @@
     };
   });
 
-  dir.directive('caChart', function($q, $filter) {
+  dir.directive('caChart', function($q, $filter, caD3Svc) {
     return {
       templateUrl: 'partials/ca-chart.html',
       restrict: 'E',
@@ -160,18 +160,20 @@
           });
         };
         renderCb = function(resolved) {
-          var contextExchanges, focusExchanges, xMax, xMin, yMax, _chartProcessT, _data, _dataLoadT, _dataNested, _startTimeChart, _startTimeData, _tTotal;
-          _data = resolved.data;
+          var contextExchanges, exchanges, focusExchanges, xMax, xMin, yMax, _chartProcessT, _dataLoadT, _dataNested, _startTimeChart, _startTimeData, _tTotal;
           _startTimeData = resolved.startTimeData;
           _startTimeChart = moment();
           scope.dataLoaded = true;
           _dataLoadT = moment.duration(_startTimeChart.diff(_startTimeData), 'ms').asSeconds();
-          color.domain(d3.keys(_data[0]).filter(function(key) {
-            return key === "exchange";
-          }));
+          exchanges = Object.keys(d3.nest().key(function(d) {
+            return d.exchange;
+          }).rollup(function(leaves) {
+            return null;
+          }).map(resolved.data));
+          color.domain(exchanges);
           _dataNested = d3.nest().key(function(d) {
             return d.exchange;
-          }).entries(_data);
+          }).entries(resolved.data);
           xMin = d3.min(_dataNested, function(d) {
             return d3.min(d.values, function(d) {
               return d.date;

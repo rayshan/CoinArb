@@ -147,6 +147,14 @@
     };
   });
 
+  svc.factory('caD3Svc', function() {
+    return {
+      dFetch: function() {},
+      dProcess: function() {},
+      render: function() {}
+    };
+  });
+
 }).call(this);
 
 /*

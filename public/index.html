@@ -36,7 +36,7 @@
 </nav>
 
 <div id="wrapper">
-	<section id="ca-exchanges">
+	<section id="ca-exchanges" ng-if="app.showExchanges">
 		<div class="ca-exchange {{ 'col-lg-' + app.cols }}"
 		     ng-class="exchange.id === app.baseline ? 'ca-baseline' : ''"
 		     ng-repeat="exchange in app.data | toArray | orderBy: 'order' | filter: {show: true}"
@@ -88,7 +88,7 @@
 		</div>
 	</section>
 
-	<section id="ca-chart">
+	<section id="ca-chart" ng-if="app.showChart">
 		<ca-chart data="app.dataChart"></ca-chart>
 	</section>
 </div>
