@@ -1,4 +1,10 @@
-angular.module('CaApp').factory 'caNotificationSvc', () ->
+svc = angular.module('CaAppSvc', [
+	'ngResource'
+	'btford.socket-io'
+	'poller'
+])
+
+svc.factory 'caNotificationSvc', () ->
 	enabled: false
 	create: (data) ->
 		if Notification.permission is not 'granted'
@@ -9,7 +15,7 @@ angular.module('CaApp').factory 'caNotificationSvc', () ->
 		}
 		return
 
-angular.module('CaApp').factory 'caCheckAndCopySvc', ($rootScope, exchangeSvc, caNotificationSvc) ->
+svc.factory 'caCheckAndCopySvc', ($rootScope, exchangeSvc, caNotificationSvc) ->
 	process: (id, current) ->
 		now = moment()
 		data = exchangeSvc.data[id].fetched
@@ -42,7 +48,7 @@ angular.module('CaApp').factory 'caCheckAndCopySvc', ($rootScope, exchangeSvc, c
 
 		return
 
-angular.module('CaApp').factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc, caCheckAndCopySvc) ->
+svc.factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc, caCheckAndCopySvc) ->
 	USDCNY = 6.05
 	pollers = []
 
@@ -94,7 +100,7 @@ angular.module('CaApp').factory 'caTickerSvc', ($resource, $filter, poller, caSo
 
 	return
 
-angular.module('CaApp').factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySvc) ->
+svc.factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySvc) ->
 	unsubscribe =
 		depthBTCUSD:
 			op: 'unsubscribe'

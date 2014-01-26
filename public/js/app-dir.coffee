@@ -1,4 +1,8 @@
-angular.module('CaApp').directive 'caNumDisplay', ($animate) ->
+dir = angular.module('CaAppDir', [
+	'ngAnimate'
+])
+
+dir.directive 'caNumDisplay', ($animate) ->
 	templateUrl: 'partials/ca-num-display.html'
 	replace: true
 	restrict: 'E'
@@ -37,7 +41,7 @@ angular.module('CaApp').directive 'caNumDisplay', ($animate) ->
 
 		return
 
-angular.module('CaApp').directive 'caChart', ($q, $filter) ->
+dir.directive 'caChart', ($q, $filter) ->
 	templateUrl: 'partials/ca-chart.html'
 	restrict: 'E'
 	scope:
@@ -139,7 +143,6 @@ angular.module('CaApp').directive 'caChart', ($q, $filter) ->
 			lItems.enter().append("g").classed "items", true
 
 			chart.selectAll("[data-legend]").each ->
-				console.log(@getBBox())
 				# css selector of all paths w/ attr named data-legend using brackets; data- is html5 standard; this = path
 				path = d3.select(@)
 
@@ -305,6 +308,6 @@ angular.module('CaApp').directive 'caChart', ($q, $filter) ->
 
 		return
 
-angular.module('CaApp').directive 'caSelectFocus', ($q, $filter) ->
+dir.directive 'caSelectFocus', ($q, $filter) ->
 	#	with copy to clipboard button
 	return

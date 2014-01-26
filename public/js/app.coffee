@@ -1,15 +1,14 @@
-angular.module('CaApp', [
-	'ngResource'
-	'ngAnimate'
-	'btford.socket-io'
-	'poller'
+app = angular.module('CaApp', [
+	'CaAppDir'
+	'CaAppSvc'
+	'CaAppFilter'
 ])
 
-angular.module('CaApp').run (caTickerSvc) ->
+app.run (caTickerSvc) ->
 	# excute immediately on app bootstrap
 	return
 
-angular.module('CaApp').controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
+app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
 	@getTime = (timeZone) -> now = moment(); now.format('HH:mm:ss')
 
 	@showTime = () ->
