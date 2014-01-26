@@ -60,7 +60,7 @@
         data: "="
       },
       link: function(scope, ele, attrs) {
-        var axisX, axisX2, axisY, brush, brushed, chart, chartCanvas, color, context, d3LoadData, dataParser, errorCb, focus, h, h2, hOrig, infoBox, line, line2, margin, margin2, notifyCb, promise, renderCb, w, wOrig, x, x2, y, y2;
+        var axisX, axisX2, axisY, brush, brushed, chart, chartCanvas, color, context, d3LoadData, dataParser, errorCb, focus, h, h2, hOrig, infoBox, legend, line, line2, margin, margin2, notifyCb, promise, renderCb, w, wOrig, x, x2, y, y2;
         scope.dataLoaded = false;
         scope.chartProcessed = false;
         chartCanvas = ele[0].querySelector(".ca-chart-line").children[0];
@@ -112,6 +112,50 @@
         focus = chart.append("g").attr('id', 'focus').attr("transform", "translate(" + margin.l + ", " + margin.t + ")");
         context = chart.append("g").attr('id', 'context').attr("transform", "translate(" + margin2.l + ", " + margin2.t + ")");
         infoBox = chart.append("g").attr('id', 'info-box').attr("transform", "translate(" + (margin.l * 2) + ", 0)");
+        legend = function() {
+          var items, lBox, lItems, lPadding;
+          items = {};
+          chart = d3.select(this.node().parentNode);
+          lPadding = this.attr("data-style-padding") || 5;
+          lBox = this.selectAll(".box").data([true]);
+          lItems = this.selectAll(".items").data([true]);
+          lBox.enter().append("rect").classed("box", true);
+          lItems.enter().append("g").classed("items", true);
+          chart.selectAll("[data-legend]").each(function() {
+            var path;
+            console.log(this.getBBox());
+            path = d3.select(this);
+            items[path.attr("data-legend")] = {
+              pos: path.attr("data-legend-pos") || this.getBBox().y,
+              color: path.attr("data-legend-color") || (path.style("fill") !== "none" ? path.style("fill") : path.style("stroke"))
+            };
+          });
+          items = d3.entries(items).sort(function(a, b) {
+            return a.value.pos - b.value.pos;
+          });
+          lItems.selectAll("text").data(items, function(d) {
+            return d.key;
+          }).call(function(d) {
+            return d.enter().append("text");
+          }).call(function(d) {
+            return d.exit().remove();
+          }).attr("y", function(d, i) {
+            return i + "em";
+          }).attr("x", "1em").text(function(d) {
+            return d.key;
+          });
+          lItems.selectAll("circle").data(items, function(d) {
+            return d.key;
+          }).call(function(d) {
+            return d.enter().append("circle");
+          }).call(function(d) {
+            return d.exit().remove();
+          }).attr("cy", function(d, i) {
+            return i - 0.25 + "em";
+          }).attr("cx", 0).attr("r", "0.4em").style("fill", function(d) {
+            return d.value.color;
+          });
+        };
         renderCb = function(resolved) {
           var contextExchanges, focusExchanges, xMax, xMin, yMax, _chartProcessT, _data, _dataLoadT, _dataNested, _startTimeChart, _startTimeData, _tTotal;
           _data = resolved.data;
@@ -151,9 +195,12 @@
           }).enter().append("g").attr("clip-path", "url(#focus-clip)").attr("class", "exchange");
           focusExchanges.append("path").attr("d", function(d) {
             return line(d.values);
-          }).attr("class", "line").style("stroke", function(d) {
+          }).attr("data-legend", function(d) {
+            return d.key;
+          }).attr("class", "line focus").style("stroke", function(d) {
             return color(d.key);
           });
+          focus.append("g").attr("class", "legend").attr("transform", "translate(50,30)").style("font-size", "12px").call(legend);
           context.append("g").attr("class", "axis x2").attr("transform", "translate(0, " + h2 + ")").call(axisX2);
           context.append("g").attr("class", "x brush").call(brush).selectAll("rect").attr("y", -6).attr("height", h2 + 7);
           contextExchanges = context.selectAll(".exchange").data(_dataNested, function(d) {

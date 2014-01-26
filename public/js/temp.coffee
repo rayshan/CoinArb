@@ -1,126 +1,59 @@
-margin =
-	top: 25
-	right: 40
-	bottom: 35
-	left: 85
+# Any elements that have a title set in the "data-legend" attribute will be included when f() is called
+# can define these as attr for override:
+# data-legend-pos
+# data-legend-color
+# data-style-padding
 
-w = 500 - margin.left - margin.right
-h = 350 - margin.top - margin.bottom
-padding = 10
-colors = [
-	["Local", "#377EB8"],
-	["Global", "#4DAF4A"]
-]
-dataset = [
-	keyword: "payday loans"
-	global: 1400000
-	local: 673000
-	cpc: "14.11"
-,
-	keyword: "title loans"
-	global: 165000
-	local: 160000
-	cpc: "12.53"
-,
-	keyword: "personal loans"
-	global: 550000
-	local: 301000
-	cpc: "6.14"
-,
-	keyword: "online personal loans"
-	global: 15400
-	local: 12900
-	cpc: "5.84"
-,
-	keyword: "online title loans"
-	global: 111600
-	local: 11500
-	cpc: "11.74"
-]
-xScale = d3.scale.ordinal().domain(d3.range(dataset.length)).rangeRoundBands([0, w], 0.05)
+legend = (g) -> # g should be classed legend
+	g.each ->
+		items = {}
 
-# ternary operator to determine if global or local has a larger scale
-yScale = d3.scale.linear().domain([
-	0, d3.max(dataset, (d) ->
-		(if (d.local > d.global) then d.local else d.global)
-	)
-]).range([h, 0])
-xAxis = d3.svg.axis().scale(xScale).orient("bottom")
-yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5)
-global = (d) ->
-	d.global
+		g = d3.select(this) # this is already current selection?
+		svg = d3.select(g.property("nearestViewportElement")) # is this supposed to select the whole parent chart?
 
-cpc = (d) ->
-	d.cpc
+		legendPadding = g.attr("data-style-padding") or 5
 
-commaFormat = d3.format(",")
+		lBox = g.selectAll(".box").data([true])
+		lItems = g.selectAll(".items").data([true])
 
-#SVG element
-svg = d3.select("#searchVolume").append("svg").attr("width", w + margin.left + margin.right).attr("height",
-		h + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		lBox.enter().append("rect").classed "box", true
+		lItems.enter().append("g").classed "items", true
 
-# Graph Bars
-sets = svg.selectAll(".set").data(dataset).enter().append("g").attr("class", "set").attr("transform", (d, i) ->
-	"translate(" + xScale(i) + ",0)"
-)
-sets.append("rect").attr("class", "local").attr("width", xScale.rangeBand() / 2).attr("y",(d) ->
-	yScale d.local
-).attr("x", xScale.rangeBand() / 2).attr("height",(d) ->
-	h - yScale(d.local)
-).attr("fill", colors[0][1]).append("text").text((d) ->
-	commaFormat d.local
-).attr("text-anchor", "middle").attr("x",(d, i) ->
-	xScale(i) + xScale.rangeBand() / 2
-).attr("y",(d) ->
-	h - yScale(d.local) + 14
-).attr("font-family", "sans-serif").attr("font-size", "11px").attr "fill", "black"
-sets.append("rect").attr("class", "global").attr("width", xScale.rangeBand() / 2).attr("y",(d) ->
-	yScale d.global
-).attr("height",(d) ->
-	h - yScale(d.global)
-).attr("fill", colors[1][1]).append("text").text((d) ->
-	commaFormat d.global
-).attr("text-anchor", "middle").attr("x",(d, i) ->
-	xScale(i) + xScale.rangeBand() / 2
-).attr("y",(d) ->
-	h - yScale(d.global) + 14
-).attr("font-family", "sans-serif").attr("font-size", "11px").attr "fill", "red"
+		svg.selectAll("[data-legend]").each -> # why brackets?
+			self = d3.select(this)
+			items[self.attr("data-legend")] = # returns attr that's the name of series of the only element; b/c 2nd arg == null
+				pos: self.attr("data-legend-pos") or @getBBox().y # getBBox() is w3 svg spec
+				color:
+					self.attr("data-legend-color") || if self.style("fill") isnt "none" then self.style("fill") else self.style("stroke")
 
-# xAxis
-# Add the X Axis
-svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + (h) + ")").call xAxis
+		items = d3.entries(items).sort((a, b) -> a.value.pos - b.value.pos)
+		# array.sort compare function takes 1st & 2nd, then 2nd & 3rd... if compare function returns
+		# < 0 a before b
+		# == 0 order unchanged
+		# > 0 b before a
 
-# yAxis
-svg.append("g").attr("class", "y axis").attr("transform", "translate(0 ,0)").call yAxis
+		lItems.selectAll("text")
+				.data(items, (d) -> d.key)
+				.call((d) -> d.enter().append "text")
+				.call((d) -> d.exit().remove())
+				.attr("y", (d, i) -> i + "em")
+				.attr("x", "1em")
+				.text((d) -> d.key)
 
-# xAxis label
-svg.append("text").attr("transform", "translate(" + (w / 2) + " ," + (h + margin.bottom - 5) + ")").style("text-anchor",
-		"middle").text "Keyword"
+		lItems.selectAll("circle")
+				.data(items, (d) -> d.key)
+				.call((d) -> d.enter().append "circle")
+				.call((d) -> d.exit().remove())
+				.attr("cy", (d, i) -> i - 0.25 + "em")
+				.attr("cx", 0)
+				.attr("r", "0.4em")
+				.style("fill", (d) -> d.value.color)
 
-#yAxis label
-svg.append("text").attr("transform", "rotate(-90)").attr("y", 0 - margin.left).attr("x", 0 - (h / 2)).attr("dy",
-		"1em").style("text-anchor", "middle").text "Searches"
+		# Reposition and resize the box
+		lbbox = lItems[0][0].getBBox()
+		lBox.attr("x", (lbbox.x - legendPadding))
+		.attr("y", (lbbox.y - legendPadding))
+		.attr("height", (lbbox.height + 2 * legendPadding))
+		.attr("width", (lbbox.width + 2 * legendPadding))
 
-# Title
-svg.append("text").attr("x", (w / 2)).attr("y", 0 - (margin.top / 2)).attr("text-anchor", "middle").style("font-size",
-		"16px").style("text-decoration", "underline").text "Global & Local Searches"
-
-# add legend
-
-#.attr("x", w - 65)
-#.attr("y", 50)
-legend = svg.append("g").attr("class", "legend").attr("height", 100).attr("width", 100).attr("transform",
-		"translate(-20,50)")
-legendRect = legend.selectAll("rect").data(colors)
-legendRect.enter().append("rect").attr("x", w - 65).attr("width", 10).attr "height", 10
-legendRect.attr("y",(d, i) ->
-	i * 20
-).style "fill", (d) ->
-	d[1]
-
-legendText = legend.selectAll("text").data(colors)
-legendText.enter().append("text").attr "x", w - 52
-legendText.attr("y",(d, i) ->
-	i * 20 + 9
-).text (d) ->
-	d[0]
+	g

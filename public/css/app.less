@@ -221,6 +221,8 @@ div.ca-blur {
 	.line {
 		fill: none;
 		stroke-width: 1.5px;
+
+		&.focus:hover { stroke-width: 3px }
 		// crispEdges or 1px line look bad due to curved lines
 	}
 
@@ -251,12 +253,8 @@ div.ca-blur {
 	}
 
 	.legend {
-		rect {
-			fill:white;
-			stroke:black;
-			opacity:0.8;
-		}
-		text {
+		.box { fill: none }
+		.items {
 			font: 10px sans-serif;
 			fill: @ca-light-2;
 		}
