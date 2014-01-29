@@ -112,7 +112,7 @@ svc.factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySv
 	process: (data) ->
 		socket = socketFactory({
 #			ioSocket: io.connect data.api.uri
-		ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true}
+#		ioSocket: io.connect 'https://socketio.mtgox.com:443/mtgox?Currency=USD', {secure: true} # certificate expired in April 2013 WTF
 		})
 
 		socket.forward('error')
