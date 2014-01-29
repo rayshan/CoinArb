@@ -58,19 +58,16 @@ dir.directive 'caChart', ($q, $filter, caD3Svc) ->
 
 		c.wOrig = d3.select(c.canvas).node().offsetWidth
 		c.hOrig = d3.select(c.canvas).node().offsetHeight
-#		hOrig = 300
-#		console.log(wOrig, hOrig)
 		# offsetW/H = border + padding + vertical scrollbar (if present & rendered) + CSS width
+		marginBase = 55
 		c.margin =
 			t: 0
-			r: 50
-			b: 100
-			l: 50
+			l: marginBase, r: 0
+			b: c.hOrig * .4
 		c.margin2 =
-			t: 280
-			r: 50
-			b: 20
-			l: 50
+			t: c.hOrig * .6 + marginBase / 2
+			l: marginBase, r: 0
+			b: marginBase * .4
 		c.w = c.wOrig - c.margin.l - c.margin.r
 		c.h = c.hOrig - c.margin.t - c.margin.b
 		c.h2 = c.hOrig - c.margin2.t - c.margin2.b
@@ -85,18 +82,18 @@ dir.directive 'caChart', ($q, $filter, caD3Svc) ->
 		c.axisX = d3.svg.axis().scale(c.x).orient("bottom")
 		c.axisX2 = d3.svg.axis().scale(c.x2).orient("bottom")
 		c.axisY = d3.svg.axis()
-				.scale(c.y)
-				.orient("left")
-				.ticks(10, "$")
+				.scale c.y
+				.orient "left"
+				.ticks 10, "$"
 
 		c.line = d3.svg.line()
 				.interpolate("basis")
-				.x((d) -> c.x(d.date))
-				.y((d) -> c.y(d.close))
+				.x (d) -> c.x d.date
+				.y (d) -> c.y d.close
 		c.line2 = d3.svg.line()
-				.interpolate("basis")
-				.x((d) -> c.x2(d.date))
-				.y((d) -> c.y2(d.close))
+				.interpolate "basis"
+				.x (d) -> c.x2 d.date
+				.y (d) -> c.y2 d.close
 
 		c.brushed = ->
 			c.x.domain(if c.brush.empty() then c.x2.domain() else c.brush.extent())

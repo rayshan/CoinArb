@@ -258,15 +258,15 @@ svc.factory 'caD3Svc', ($q, $filter) ->
 
 			# render x axis
 			c.focus.append("g")
-			.attr("class", "axis x1")
-			.attr("transform", "translate(0, #{ c.h })")
-			.call(c.axisX)
+					.attr "class", "axis x1"
+					.attr "transform", "translate(0, #{ c.h })"
+					.call c.axisX
 
 			# render y axis
 			c.focus.append("g")
-			.attr("class", "axis y1")
-			.call(c.axisY)
-			.append("text")
+			.attr "class", "axis y1"
+			.call c.axisY
+			.append "text"
 			.attr("class", "axis label")
 			.attr("transform", "rotate(-90)")
 			.attr("y", 6)

@@ -9,7 +9,7 @@ app.run (caTickerSvc) ->
 	return
 
 app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
-	@showExchanges = false
+	@showExchanges = true
 	@showChart = true
 
 	@getTime = (timeZone) -> now = moment(); now.format('HH:mm:ss')
