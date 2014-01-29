@@ -17,4 +17,4 @@ Install dependencies:
 `bower install`
 
 Serve:
-`/web/index.html`
+`/public/index.html`
