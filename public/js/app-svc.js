@@ -119,7 +119,9 @@
       process: function(data) {
         var channel, obj, socket;
         socket = socketFactory({
-          ioSocket: io.connect(data.api.uri)
+          ioSocket: io.connect('https://socketio.mtgox.com:443/mtgox?Currency=USD', {
+            secure: true
+          })
         });
         socket.forward('error');
         for (channel in unsubscribe) {
