@@ -58,7 +58,7 @@ dir.directive 'caChart', ($q, $filter, caD3Svc) ->
 
 		c.wOrig = d3.select(c.canvas).node().offsetWidth
 		c.hOrig = d3.select(c.canvas).node().offsetHeight
-		# offsetW / H = border + padding + vertical scrollbar (if present & rendered) + CSS width
+		# offsetW/H = border + padding + vertical scrollbar (if present & rendered) + CSS width
 		marginBase = 55
 		c.margin =
 			t: 0
