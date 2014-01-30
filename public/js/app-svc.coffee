@@ -61,6 +61,12 @@ svc.factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc
 						spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY)
 					#						error: null
 					caCheckAndCopySvc.process(id, current)
+				when "mtgox"
+					current =
+						last: $filter('round')(res.data.last.value)
+						spread: $filter('round')(res.data.buy.value - res.data.sell.value)
+					#						error: null
+					caCheckAndCopySvc.process(id, current)
 #				when "btce"
 #					current =
 #						last: $filter('round')(res.ticker.last)
@@ -325,7 +331,6 @@ svc.factory 'caD3Svc', ($q, $filter) ->
 			# ============================
 
 			_renderT = moment.duration(moment().diff(_startT), 'ms').asSeconds()
-			console.log(resolved.t, _renderT)
 			_totalT = $filter("round")(resolved.t + _renderT)
 
 			c.infoBox.append("text")

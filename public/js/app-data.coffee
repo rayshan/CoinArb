@@ -23,9 +23,11 @@ angular.module('CaApp').factory 'exchangeSvc', () ->
 			defaultCurrency: 'USD'
 			website: 'https://mtgox.com/'
 			api:
-				type: 'ws'
-				uri: 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
-				# uri: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker_fast' # REST api - https://bitbucket.org/nitrous/mtgox-api
+#				type: 'ws'
+#				uri: 'http://socketio.mtgox.com:80/mtgox?Currency=USD'
+				type: 'REST'
+				uri: 'https://data.mtgox.com/api/2/BTCUSD/money/ticker_fast' # REST api - https://bitbucket.org/nitrous/mtgox-api
+				rateLimit: 1005
 			fetched:
 				initialized: false
 		btcchina:
