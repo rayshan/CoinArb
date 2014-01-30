@@ -206,8 +206,72 @@
       });
     };
     return {
+      preRender: function(ele) {
+        var c, _deferred, _startT;
+        _startT = moment();
+        _deferred = $q.defer();
+        c = {};
+        c.canvas = ele[0].querySelector(".ca-chart-line").children[0];
+        c.wOrig = d3.select(c.canvas).node().offsetWidth;
+        c.hOrig = d3.select(c.canvas).node().offsetHeight;
+        console.log(c.wOrig, c.hOrig);
+        c.marginBase = 55;
+        c.margin = {
+          t: 0,
+          l: c.marginBase,
+          r: 0,
+          b: c.hOrig * .4
+        };
+        c.margin2 = {
+          t: c.hOrig * .6 + c.marginBase / 2,
+          l: c.marginBase,
+          r: 0,
+          b: c.marginBase * .4
+        };
+        c.w = c.wOrig - c.margin.l - c.margin.r;
+        c.h = c.hOrig - c.margin.t - c.margin.b;
+        c.h2 = c.hOrig - c.margin2.t - c.margin2.b;
+        c.color = d3.scale.category10();
+        c.x = d3.time.scale().range([0, c.w]);
+        c.x2 = d3.time.scale().range([0, c.w]);
+        c.y = d3.scale.linear().range([c.h, 0]);
+        c.y2 = d3.scale.linear().range([c.h2, 0]);
+        c.axisX = d3.svg.axis().scale(c.x).orient("bottom");
+        c.axisX2 = d3.svg.axis().scale(c.x2).orient("bottom");
+        c.axisY = d3.svg.axis().scale(c.y).orient("left").ticks(10, "$");
+        c.line = d3.svg.line().interpolate("basis").x(function(d) {
+          return c.x(d.date);
+        }).y(function(d) {
+          return c.y(d.close);
+        });
+        c.line2 = d3.svg.line().interpolate("basis").x(function(d) {
+          return c.x2(d.date);
+        }).y(function(d) {
+          return c.y2(d.close);
+        });
+        c.brushed = function() {
+          c.x.domain(c.brush.empty() ? c.x2.domain() : c.brush.extent());
+          c.focus.selectAll("path.line").attr("d", function(d) {
+            return c.line(d.values);
+          });
+          c.focus.select(".x1").call(c.axisX);
+        };
+        c.brush = d3.svg.brush().x(c.x2).on("brush", c.brushed);
+        c.chart = d3.select(c.canvas).attr("width", c.w + c.margin.l + c.margin.r).attr("height", c.h + c.margin.t + c.margin.b);
+        c.chart.append("defs").append("clipPath").attr("id", "focus-clip").append("rect").attr("width", c.w).attr("height", c.h);
+        c.focus = c.chart.append("g").attr('id', 'focus').attr("transform", "translate(" + c.margin.l + ", " + c.margin.t + ")");
+        c.context = c.chart.append("g").attr('id', 'context').attr("transform", "translate(" + c.margin2.l + ", " + c.margin2.t + ")");
+        c.infoBox = c.chart.append("g").attr('id', 'info-box').attr("transform", "translate(" + (c.margin.l * 2) + ", 0)");
+        _deferred.resolve({
+          msg: "pre-rendered",
+          c: c,
+          t: moment.duration(moment().diff(_startT), 'ms').asSeconds()
+        });
+        return _deferred.promise;
+      },
       fetch: function(uri) {
         var _deferred, _startT;
+        console.log("fetched <- make sure only once");
         _startT = moment();
         _deferred = $q.defer();
         d3.tsv(uri, dataParser, function(err, data) {
@@ -237,60 +301,60 @@
         });
         return _deferred.promise;
       },
-      render: function(c) {
-        return function(resolved) {
-          var contextExchanges, focusExchanges, xMax, xMin, yMax, _deferred, _renderT, _startT, _totalT;
-          _deferred = $q.defer();
-          _startT = moment();
-          c.color.domain(resolved.keys);
-          xMin = d3.min(resolved.data, function(d) {
-            return d3.min(d.values, function(d) {
-              return d.date;
-            });
+      render: function(resolve) {
+        var c, contextExchanges, focusExchanges, resolved, xMax, xMin, yMax, _deferred, _renderT, _startT, _totalT;
+        c = resolve[0].c;
+        resolved = resolve[1];
+        _deferred = $q.defer();
+        _startT = moment();
+        c.color.domain(resolved.keys);
+        xMin = d3.min(resolved.data, function(d) {
+          return d3.min(d.values, function(d) {
+            return d.date;
           });
-          xMax = d3.max(resolved.data, function(d) {
-            return d3.max(d.values, function(d) {
-              return d.date;
-            });
+        });
+        xMax = d3.max(resolved.data, function(d) {
+          return d3.max(d.values, function(d) {
+            return d.date;
           });
-          yMax = d3.max(resolved.data, function(d) {
-            return d3.max(d.values, function(d) {
-              return d.close;
-            });
+        });
+        yMax = d3.max(resolved.data, function(d) {
+          return d3.max(d.values, function(d) {
+            return d.close;
           });
-          c.x.domain([xMin, xMax]);
-          c.y.domain([0, yMax]);
-          c.x2.domain(c.x.domain());
-          c.y2.domain(c.y.domain());
-          c.focus.append("g").attr("class", "axis x1").attr("transform", "translate(0, " + c.h + ")").call(c.axisX);
-          c.focus.append("g").attr("class", "axis y1").call(c.axisY).append("text").attr("class", "axis label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "1em").text("per Bitcoin");
-          focusExchanges = c.focus.selectAll(".exchange").data(resolved.data, function(d) {
-            return d.key;
-          }).enter().append("g").attr("clip-path", "url(#focus-clip)").attr("class", "exchange");
-          focusExchanges.append("path").attr("d", function(d) {
-            return c.line(d.values);
-          }).attr("data-legend", function(d) {
-            return d.key;
-          }).attr("class", "line focus").style("stroke", function(d) {
-            return c.color(d.key);
-          });
-          c.focus.append("g").attr("class", "legend").attr("transform", "translate(50,30)").style("font-size", "12px").call(legend);
-          c.context.append("g").attr("class", "axis x2").attr("transform", "translate(0, " + c.h2 + ")").call(c.axisX2);
-          c.context.append("g").attr("class", "x brush").call(c.brush).selectAll("rect").attr("y", -6).attr("height", c.h2 + 7);
-          contextExchanges = c.context.selectAll(".exchange").data(resolved.data, function(d) {
-            return d.key;
-          }).enter().append("g").attr("class", "exchange");
-          contextExchanges.append("path").attr("class", "line").attr("d", function(d) {
-            return c.line2(d.values);
-          }).style("stroke", function(d) {
-            return c.color(d.key);
-          });
-          _renderT = moment.duration(moment().diff(_startT), 'ms').asSeconds();
-          _totalT = $filter("round")(resolved.t + _renderT);
-          c.infoBox.append("text").attr("dy", "1em").text("Generated by CoinArb in " + _totalT + " s.");
-          _deferred.resolve();
-          return _deferred.promise;
-        };
+        });
+        c.x.domain([xMin, xMax]);
+        c.y.domain([0, yMax]);
+        c.x2.domain(c.x.domain());
+        c.y2.domain(c.y.domain());
+        c.focus.append("g").attr("class", "axis x1").attr("transform", "translate(0, " + c.h + ")").call(c.axisX);
+        c.focus.append("g").attr("class", "axis y1").call(c.axisY).append("text").attr("class", "axis label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "1em").text("per Bitcoin");
+        focusExchanges = c.focus.selectAll(".exchange").data(resolved.data, function(d) {
+          return d.key;
+        }).enter().append("g").attr("clip-path", "url(#focus-clip)").attr("class", "exchange");
+        focusExchanges.append("path").attr("d", function(d) {
+          return c.line(d.values);
+        }).attr("data-legend", function(d) {
+          return d.key;
+        }).attr("class", "line focus").style("stroke", function(d) {
+          return c.color(d.key);
+        });
+        c.focus.append("g").attr("class", "legend").attr("transform", "translate(50,30)").style("font-size", "12px").call(legend);
+        c.context.append("g").attr("class", "axis x2").attr("transform", "translate(0, " + c.h2 + ")").call(c.axisX2);
+        c.context.append("g").attr("class", "x brush").call(c.brush).selectAll("rect").attr("y", -6).attr("height", c.h2 + 7);
+        contextExchanges = c.context.selectAll(".exchange").data(resolved.data, function(d) {
+          return d.key;
+        }).enter().append("g").attr("class", "exchange");
+        contextExchanges.append("path").attr("class", "line").attr("d", function(d) {
+          return c.line2(d.values);
+        }).style("stroke", function(d) {
+          return c.color(d.key);
+        });
+        _renderT = moment.duration(moment().diff(_startT), 'ms').asSeconds();
+        _totalT = $filter("round")(resolved.t + _renderT);
+        c.infoBox.append("text").attr("dy", "1em").text("Generated by CoinArb in " + _totalT + " s.");
+        _deferred.resolve();
+        return _deferred.promise;
       }
     };
   });
