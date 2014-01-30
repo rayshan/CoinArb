@@ -6053,29 +6053,12 @@ div#wrapper section#ca-exchanges:after {
 div#wrapper section#ca-exchanges div.ca-exchange {
   height: 60vh;
   text-align: center;
-  -webkit-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
-  -moz-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
-  -o-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
-  -ms-transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
-  transition: all 0.25s cubic-bezier(0.25, 0.25, 0.115, 1.445);
-  -webkit-transform-origin: top;
-  -moz-transform-origin: top;
-  -ms-transform-origin: top;
-  -o-transform-origin: top;
-  transform-origin: top;
 }
 div#wrapper section#ca-exchanges div.ca-exchange:hover {
   background-color: #1a1a1a;
-  -webkit-transform: scale(1.05);
-  -moz-transform: scale(1.05);
-  -ms-transform: scale(1.05);
-  -o-transform: scale(1.05);
-  transform: scale(1.05);
-  z-index: 500;
 }
 div#wrapper section#ca-exchanges div.ca-exchange.ca-baseline {
   box-shadow: inset 0 5px #5bc0de;
-  z-index: 1;
 }
 div#wrapper section#ca-exchanges div.ca-exchange img.ca-logo {
   -webkit-filter: grayscale(1) invert(1) brightness(0.95);
@@ -6147,8 +6130,8 @@ div#wrapper section#ca-chart {
 }
 button.ca-btn {
   color: #e6e6e6;
-  background-color: #1a1a1a;
-  border: 1px solid #333333;
+  background-color: #333333;
+  border: 1px solid #4d4d4d;
   margin: 5px;
   padding: 10px;
   text-align: center;
@@ -6169,6 +6152,19 @@ button.ca-btn:focus {
 button.ca-btn.ca-btn-baseline {
   border: 1px solid #5bc0de;
   color: #5bc0de;
+  -webkit-transition: all 0.1s linear;
+  -moz-transition: all 0.1s linear;
+  -o-transition: all 0.1s linear;
+  -ms-transition: all 0.1s linear;
+  transition: all 0.1s linear;
+}
+button.ca-btn.ca-btn-baseline:hover {
+  background-color: #0d0d0d;
+  -webkit-transform: scale(1.05);
+  -moz-transform: scale(1.05);
+  -ms-transform: scale(1.05);
+  -o-transform: scale(1.05);
+  transform: scale(1.05);
 }
 a.ca-btn {
   color: #333333;
@@ -6259,9 +6255,8 @@ div.ca-blur.disabled {
   shape-rendering: crispEdges;
 }
 .ca-chart-line .brush .extent {
-  fill: black;
-  stroke: #333333;
-  fill-opacity: .5;
+  fill: white;
+  fill-opacity: .25;
   shape-rendering: crispEdges;
 }
 .ca-chart-line .legend .box {
