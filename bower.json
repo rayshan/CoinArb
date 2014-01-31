@@ -1,6 +1,6 @@
 {
   "name": "CoinArb",
-  "version": "0.1",
+  "version": "0.1.0",
   "authors": [
     "Ray Shan <ray@shan.io>"
   ],
@@ -14,18 +14,18 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "~3.0.3",
+    "bootstrap": "~3.1.0",
     "moment": "~2.5.0",
     "angular": "~1.2.7",
     "angular-animate": "~1.2.7",
     "angular-socket-io": "~0.3.0",
-    "socket.io": "~0.9.15",
     "socket.io-client": "~0.9.16",
     "angular-poller": "~0.1.1",
     "font-awesome": "~4.0.3",
-    "lodash": "~2.4.1",
-    "less-prefixer": "*",
-    "jquery": "~2.0.3",
     "d3": "~3.4.1"
+  },
+  "devDependencies": {
+    "lodash": "~2.4.1",
+    "less-prefixer": "*"
   }
 }
