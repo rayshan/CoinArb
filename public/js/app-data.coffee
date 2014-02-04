@@ -53,9 +53,11 @@ angular.module('CaApp').factory 'exchangeSvc', () ->
 			website: 'https://localbitcoins.com'
 			api:
 				type: 'REST'
-				uri: 'https://api.bitcoinaverage.com/exchanges/USD' # appears to pull avg_3h
-				# uri: 'https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/' # no Access-Control-Allow-Origin header for CORS
-				rateLimit: 1001 * 60
+#				uri: 'https://api.bitcoinaverage.com/exchanges/USD' # appears to pull avg_3h
+				# uri: 'https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/' # no CORS
+				uri: 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%20%3D%20%22https%3A%2F%2Flocalbitcoins.com%2Fbitcoinaverage%2Fticker-all-currencies%2F%22&format=json&callback='
+				# yql
+				rateLimit: 1000 * 5
 			fetched:
 				initialized: false
 		btce:
@@ -68,9 +70,11 @@ angular.module('CaApp').factory 'exchangeSvc', () ->
 			website: 'https://btc-e.com/'
 			api:
 				type: 'REST'
-				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
-#				uri: 'https://btc-e.com/api/2/btc_usd/ticker'
-				rateLimit: 1001 * 60
+#				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
+#				uri: 'https://btc-e.com/api/2/btc_usd/ticker' # no CORS no JSONP
+				uri: 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%20%3D%20%22https%3A%2F%2Fbtc-e.com%2Fapi%2F2%2Fbtc_usd%2Fticker%22&format=json&callback='
+				# yql, no diagnostics
+				rateLimit: 1000 * 5 # yql public 2k requests / hr
 			fetched:
 				initialized: false
 		bitstamp:
@@ -84,6 +88,7 @@ angular.module('CaApp').factory 'exchangeSvc', () ->
 			api:
 				type: 'REST'
 				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
+				# no cors, 403 when pulled via yql
 				rateLimit: 1001 * 60
 			fetched:
 				initialized: false
@@ -97,8 +102,9 @@ angular.module('CaApp').factory 'exchangeSvc', () ->
 			website: 'https://www.bitfinex.com/'
 			api:
 				type: 'REST'
-				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
-				rateLimit: 1001 * 60
+#				uri: 'https://api.bitcoinaverage.com/exchanges/USD'
+				uri: 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%20%3D%20%22https%3A%2F%2Fapi.bitfinex.com%2Fv1%2Fticker%2Fbtcusd%22&format=json&callback='
+				rateLimit: 1000 * 5
 			fetched:
 				initialized: false
 

@@ -59,25 +59,37 @@ svc.factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc
 					current =
 						last: $filter('round')(res.ticker.last / USDCNY)
 						spread: $filter('round')((res.ticker.buy - res.ticker.sell) / USDCNY)
-					#						error: null
+						# error: null
 					caCheckAndCopySvc.process(id, current)
 				when "mtgox"
 					current =
 						last: $filter('round')(res.data.last.value)
 						spread: $filter('round')(res.data.buy.value - res.data.sell.value)
-					#						error: null
+						# error: null
 					caCheckAndCopySvc.process(id, current)
-#				when "btce"
-#					current =
-#						last: $filter('round')(res.ticker.last)
-#						spread: $filter('round')(res.ticker.buy - res.ticker.sell)
-#					#						error: null
-#					caCheckAndCopySvc.process(id, current)
+				when "btce"
+					current =
+						last: $filter('round')(res.query.results.ticker.last)
+						spread: $filter('round')(res.query.results.ticker.buy - res.query.results.ticker.sell)
+						# error: null
+					caCheckAndCopySvc.process(id, current)
+				when "bitfinex"
+					current =
+						last: $filter('round')(res.query.results.json.last_price)
+						spread: $filter('round')(res.query.results.json.bid - res.query.results.json.ask)
+						# error: null
+					caCheckAndCopySvc.process(id, current)
+				when "localbitcoins"
+					current =
+						last: $filter('round')(res.query.results.json.USD.avg_3h)
+						# need to pull from trades / orderbook to compute bid ask spread (see localbitcoins api docs)
+						# error: null
+					caCheckAndCopySvc.process(id, current)
 				else # all bitcoinaverage api
 					current =
 						last: $filter('round')(res[id].rates.last)
 						spread: $filter('round')(res[id].rates.bid - res[id].rates.ask)
-					#						error: null
+						# error: null
 					caCheckAndCopySvc.process(id, current)
 			return
 
