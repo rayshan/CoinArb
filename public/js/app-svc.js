@@ -173,9 +173,12 @@
   });
 
   svc.factory('caD3Svc', function($q, $filter) {
-    var dataParser, legend;
+    var dataParser, dateParser, legend;
+    dateParser = function(input) {
+      return d3.time.format("%m/%d/%y").parse(input);
+    };
     dataParser = function(d) {
-      d.date = d3.time.format("%m/%d/%y").parse(d.date);
+      d.date = dateParser(d.date);
       d.high = +d.high;
       d.low = +d.low;
       d.close = +d.close;
@@ -231,10 +234,10 @@
         _startT = moment();
         _deferred = $q.defer();
         c = {};
+        c.transitionDuration = 250;
         c.canvas = ele[0].querySelector(".ca-chart-line").children[0];
         c.wOrig = d3.select(c.canvas).node().offsetWidth;
         c.hOrig = d3.select(c.canvas).node().offsetHeight;
-        console.log(c.wOrig, c.hOrig);
         c.marginBase = 55;
         c.margin = {
           t: 0,
@@ -269,14 +272,6 @@
         }).y(function(d) {
           return c.y2(d.close);
         });
-        c.brushed = function() {
-          c.x.domain(c.brush.empty() ? c.x2.domain() : c.brush.extent());
-          c.focus.selectAll("path.line").attr("d", function(d) {
-            return c.line(d.values);
-          });
-          c.focus.select(".x1").call(c.axisX);
-        };
-        c.brush = d3.svg.brush().x(c.x2).on("brush", c.brushed);
         c.chart = d3.select(c.canvas).attr("width", c.w + c.margin.l + c.margin.r).attr("height", c.h + c.margin.t + c.margin.b);
         c.chart.append("defs").append("clipPath").attr("id", "focus-clip").append("rect").attr("width", c.w).attr("height", c.h);
         c.focus = c.chart.append("g").attr('id', 'focus').attr("transform", "translate(" + c.margin.l + ", " + c.margin.t + ")");
@@ -327,6 +322,20 @@
         resolved = resolve[1];
         _deferred = $q.defer();
         _startT = moment();
+        c.brushExtend = null;
+        c.brushExtend = [dateParser("1/1/13"), dateParser("12/31/13")];
+        c.brushed = function() {
+          c.x.domain(c.brush.empty() ? c.x2.domain() : c.brush.extent());
+          c.focus.selectAll("path.line").attr("d", function(d) {
+            return c.line(d.values);
+          });
+          c.focus.select(".x1").call(c.axisX);
+        };
+        c.brush = d3.svg.brush().x(c.x2);
+        if (c.brushExtend != null) {
+          c.brush.extent(c.brushExtend);
+        }
+        c.brush.on("brush", c.brushed);
         c.color.domain(resolved.keys);
         xMin = d3.min(resolved.data, function(d) {
           return d3.min(d.values, function(d) {

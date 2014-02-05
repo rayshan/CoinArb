@@ -164,8 +164,9 @@ svc.factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySv
 		return
 
 svc.factory 'caD3Svc', ($q, $filter) ->
+	dateParser = (input) -> d3.time.format("%m/%d/%y").parse(input)
 	dataParser = (d) ->
-		d.date = d3.time.format("%m/%d/%y").parse(d.date) # %x doesn't work b/c uses %Y which has century previx
+		d.date = dateParser(d.date) # %x doesn't work b/c uses %Y which has century prefix
 		d.high = +d.high
 		d.low = +d.low
 		d.close = +d.close
@@ -228,13 +229,18 @@ svc.factory 'caD3Svc', ($q, $filter) ->
 
 		c = {} # chart
 
+		c.transitionDuration = 250
+
 		c.canvas = ele[0].querySelector(".ca-chart-line").children[0]
+
+#		c.update = -> c.canvas.transition().duration(c.transitionDuration).call(c)
+
+		# positioning & sizing
 
 		c.wOrig = d3.select(c.canvas).node().offsetWidth
 		c.hOrig = d3.select(c.canvas).node().offsetHeight
-		console.log(c.wOrig, c.hOrig)
 		# offsetW / H = border + padding + vertical scrollbar (if present & rendered) + CSS width
-		c.marginBase = 55
+		c.marginBase = 55 # for multipliers
 		c.margin =
 			t: 0
 			l: c.marginBase, r: 0
@@ -247,59 +253,53 @@ svc.factory 'caD3Svc', ($q, $filter) ->
 		c.h = c.hOrig - c.margin.t - c.margin.b
 		c.h2 = c.hOrig - c.margin2.t - c.margin2.b
 
+		# scales
 		c.color = d3.scale.category10() # 20 avail
-
 		c.x = d3.time.scale().range([0, c.w])
 		c.x2 = d3.time.scale().range([0, c.w])
 		c.y = d3.scale.linear().range([c.h, 0])
 		c.y2 = d3.scale.linear().range([c.h2, 0])
 
+
+		# axis
 		c.axisX = d3.svg.axis().scale(c.x).orient("bottom")
 		c.axisX2 = d3.svg.axis().scale(c.x2).orient("bottom")
 		c.axisY = d3.svg.axis()
-		.scale c.y
-			.orient "left"
+				.scale c.y
+				.orient "left"
 				.ticks 10, "$"
 
+		# line rendering f, 1 for focus, 1 for context
 		c.line = d3.svg.line()
-		.interpolate("basis")
-		.x (d) -> c.x d.date
-			.y (d) -> c.y d.close
+				.interpolate("basis")
+				.x (d) -> c.x d.date
+				.y (d) -> c.y d.close
 		c.line2 = d3.svg.line()
-		.interpolate "basis"
-			.x (d) -> c.x2 d.date
+				.interpolate "basis"
+				.x (d) -> c.x2 d.date
 				.y (d) -> c.y2 d.close
 
-		c.brushed = ->
-			c.x.domain(if c.brush.empty() then c.x2.domain() else c.brush.extent())
-			#	y.domain(if brush.empty() then y2.domain() else brush.extent())
-			c.focus.selectAll("path.line").attr("d", (d) -> c.line(d.values))
-			c.focus.select(".x1").call(c.axisX)
-			#			focus.select(".y1").call(axisY)
-			return
-		c.brush = d3.svg.brush().x(c.x2).on("brush", c.brushed)
-
 		c.chart = d3.select(c.canvas)
-		.attr("width", c.w + c.margin.l + c.margin.r)
-		.attr("height", c.h + c.margin.t + c.margin.b)
+				.attr("width", c.w + c.margin.l + c.margin.r)
+				.attr("height", c.h + c.margin.t + c.margin.b)
 
 		c.chart.append("defs").append("clipPath") # defining for later reuse
-		.attr("id", "focus-clip")
-		.append("rect")
-		.attr("width", c.w)
-		.attr("height", c.h)
+				.attr("id", "focus-clip")
+				.append("rect")
+				.attr("width", c.w)
+				.attr("height", c.h)
 
 		c.focus = c.chart.append("g")
-		.attr('id', 'focus')
-		.attr("transform", "translate(#{ c.margin.l }, #{ c.margin.t })")
+				.attr('id', 'focus')
+				.attr("transform", "translate(#{ c.margin.l }, #{ c.margin.t })")
 
 		c.context = c.chart.append("g")
-		.attr('id', 'context')
-		.attr("transform", "translate(#{ c.margin2.l }, #{ c.margin2.t })")
+				.attr('id', 'context')
+				.attr("transform", "translate(#{ c.margin2.l }, #{ c.margin2.t })")
 
 		c.infoBox = c.chart.append("g")
-		.attr('id', 'info-box')
-		.attr("transform", "translate(#{ c.margin.l * 2 }, 0)")
+				.attr('id', 'info-box')
+				.attr("transform", "translate(#{ c.margin.l * 2 }, 0)")
 
 		_deferred.resolve {
 			msg: "pre-rendered"
@@ -349,6 +349,22 @@ svc.factory 'caD3Svc', ($q, $filter) ->
 
 		_startT = moment()
 
+		# brush
+		c.brushExtend = null # change this for date grouping
+		c.brushExtend = [dateParser("1/1/13"), dateParser("12/31/13")] # change this for date grouping
+		c.brushed = ->
+			c.x.domain(if c.brush.empty() then c.x2.domain() else c.brush.extent())
+			#			yMax = d3.max(resolved.data, (d) -> d3.max(d.values, (d) -> d.close))
+			#			c.y.domain([0, yMax])
+			#			c.y.domain(if c.brush.empty() then c.y.domain() else c.brush.extent())
+			c.focus.selectAll("path.line").attr("d", (d) -> c.line(d.values))
+			c.focus.select(".x1").call(c.axisX)
+			#			c.focus.select(".y1").call(c.axisY)
+			return
+		c.brush = d3.svg.brush().x(c.x2)
+		c.brush.extent(c.brushExtend) if c.brushExtend?
+		c.brush.on("brush", c.brushed) # .x only so don't brush y axis
+
 		# ===========================
 		# render all
 
@@ -372,63 +388,63 @@ svc.factory 'caD3Svc', ($q, $filter) ->
 
 		# render y axis
 		c.focus.append("g")
-		.attr "class", "axis y1"
-		.call c.axisY
-		.append "text"
-		.attr("class", "axis label")
-		.attr("transform", "rotate(-90)")
-		.attr("y", 6)
-		.attr("dy", "1em") # shift along y axis
-		.text("per Bitcoin")
+				.attr "class", "axis y1"
+				.call c.axisY
+			.append "text"
+				.attr "class", "axis label"
+				.attr "transform", "rotate(-90)"
+				.attr "y", 6
+				.attr "dy", "1em" # shift along y axis
+				.text "per Bitcoin"
 
 		# render clip path & g for lines
-		focusExchanges = c.focus.selectAll(".exchange")
-		.data(resolved.data, (d) -> d.key)
-		.enter().append("g")
-		.attr("clip-path", "url(#focus-clip)")
-		.attr("class", "exchange")
+		focusExchanges = c.focus.selectAll ".exchange"
+				.data resolved.data, (d) -> d.key
+			.enter().append "g"
+				.attr "clip-path", "url(#focus-clip)"
+				.attr "class", "exchange"
 
 		# render lines
 		focusExchanges.append("path")
-		.attr("d", (d) -> c.line(d.values))
-		.attr("data-legend", (d) -> d.key) # add this attr for legend f() to render legend
-		.attr("class", "line focus") # focus:hover changes stroke-width
-		.style("stroke", (d) -> c.color(d.key))
+				.attr("d", (d) -> c.line(d.values))
+				.attr("data-legend", (d) -> d.key) # add this attr for legend f() to render legend
+				.attr("class", "line focus") # focus:hover changes stroke-width
+				.style("stroke", (d) -> c.color(d.key))
 
 		# render legend
 		c.focus.append("g")
-		.attr("class", "legend")
-		.attr("transform", "translate(50,30)")
-		.style("font-size", "12px")
-		.call(legend)
+				.attr("class", "legend")
+				.attr("transform", "translate(50,30)")
+				.style("font-size", "12px")
+				.call(legend)
 
 		# ============================
 
 		# render x axis
 		c.context.append("g")
-		.attr("class", "axis x2")
-		.attr("transform", "translate(0, #{ c.h2 })")
-		.call(c.axisX2)
+				.attr("class", "axis x2")
+				.attr("transform", "translate(0, #{ c.h2 })")
+				.call(c.axisX2)
 
 		# render y axis
 		c.context.append("g")
-		.attr("class", "x brush")
-		.call(c.brush)
-		.selectAll("rect")
-		.attr("y", -6)
-		.attr("height", c.h2 + 7)
+				.attr("class", "x brush")
+				.call(c.brush)
+			.selectAll("rect")
+				.attr("y", -6)
+				.attr("height", c.h2 + 7)
 
 		# render g for lines
 		contextExchanges = c.context.selectAll(".exchange")
-		.data(resolved.data, (d) -> d.key)
-		.enter().append("g")
-		.attr("class", "exchange")
+				.data(resolved.data, (d) -> d.key)
+				.enter().append("g")
+				.attr("class", "exchange")
 
 		# render lines
 		contextExchanges.append("path")
-		.attr("class", "line")
-		.attr("d", (d) -> c.line2(d.values))
-		.style("stroke", (d) -> c.color(d.key))
+				.attr("class", "line")
+				.attr("d", (d) -> c.line2(d.values))
+				.style("stroke", (d) -> c.color(d.key))
 
 		# ============================
 

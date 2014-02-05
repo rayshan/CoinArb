@@ -6028,7 +6028,6 @@ button.ca-btn.ca-btn-baseline:hover {
 }
 a.ca-btn {
   color: #333333;
-  cursor: pointer;
   -webkit-transition: all 0.2s linear;
   -moz-transition: all 0.2s linear;
   -o-transition: all 0.2s linear;
