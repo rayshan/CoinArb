@@ -2,6 +2,7 @@ app = angular.module('CaApp', [
 	'CaAppDir'
 	'CaAppSvc'
 	'CaAppFilter'
+	'CaChartModule'
 ])
 
 app.run (caTickerSvc) ->
@@ -11,14 +12,9 @@ app.run (caTickerSvc) ->
 app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
 	@showExchanges = true
 	@showChart = true
+	@currency = "USD"
 
 	@getTime = (timeZone) -> now = moment(); now.format('HH:mm:ss')
-
-	@showTime = () ->
-		true
-#		now = moment()
-#		now.second() % 2 is 0
-
 	$interval @getTime, 1
 
 	@data = exchangeSvc.data
@@ -30,13 +26,11 @@ app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
 			if data.show is true
 				count++
 		count
-
 	@cols = 12 / @showCount() # must be divisible
-	@currency = "USD"
 
 	@baseline = "mtgox"
 	@baselineBest = null
-	@setBaseline = (id) -> @baseline = id; $scope.$broadcast "baselineSet"; return
+	@setBaseline = (id) -> @baseline = id; $scope.$broadcast "baselineSet", @baseline; return
 	@getBaselineBest = () ->
 		_lasts = []
 		_highest = null

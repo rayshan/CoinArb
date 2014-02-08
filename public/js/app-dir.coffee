@@ -41,26 +41,6 @@ dir.directive 'caNumDisplay', ($animate) ->
 
 		return
 
-dir.directive 'caChart', ($q, $filter, caD3Svc) ->
-	templateUrl: 'partials/ca-chart.html'
-	restrict: 'E'
-	scope:
-		data: "="
-	link: (scope, ele) ->
-		scope.rendered = false
-
-		preRenderP = caD3Svc.preRender(ele)
-		fetchP = caD3Svc.fetch(scope.data)
-
-		errorCb = (what) -> console.log what; return
-		notifyCb = (what) -> console.log what; return
-
-		$q.all([preRenderP, fetchP])
-				.then(caD3Svc.render, errorCb, notifyCb)
-				.then(() -> scope.rendered = true; return)
-
-		return
-
 dir.directive 'caSelectFocus', ($q, $filter) ->
 	#	with copy to clipboard button
 	return

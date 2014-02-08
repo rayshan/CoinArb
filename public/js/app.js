@@ -2,20 +2,18 @@
 (function() {
   var app;
 
-  app = angular.module('CaApp', ['CaAppDir', 'CaAppSvc', 'CaAppFilter']);
+  app = angular.module('CaApp', ['CaAppDir', 'CaAppSvc', 'CaAppFilter', 'CaChartModule']);
 
   app.run(function(caTickerSvc) {});
 
   app.controller('CaAppCtrl', function($scope, $interval, exchangeSvc) {
     this.showExchanges = true;
     this.showChart = true;
+    this.currency = "USD";
     this.getTime = function(timeZone) {
       var now;
       now = moment();
       return now.format('HH:mm:ss');
-    };
-    this.showTime = function() {
-      return true;
     };
     $interval(this.getTime, 1);
     this.data = exchangeSvc.data;
@@ -33,12 +31,11 @@
       return count;
     };
     this.cols = 12 / this.showCount();
-    this.currency = "USD";
     this.baseline = "mtgox";
     this.baselineBest = null;
     this.setBaseline = function(id) {
       this.baseline = id;
-      $scope.$broadcast("baselineSet");
+      $scope.$broadcast("baselineSet", this.baseline);
     };
     this.getBaselineBest = function() {
       var baselineDiff, exchange, key, value, _best, _highest, _lasts;
