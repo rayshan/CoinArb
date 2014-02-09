@@ -2,6 +2,11 @@ module = angular.module('CaChartModule', [])
 
 module.factory 'caD3Svc', ($q, $filter) ->
 	chartData = null
+	chartObj = null
+	time =
+		preRender: null
+		fetch: null
+		render: null
 
 	dateParser = (input) -> d3.time.format("%m/%d/%y").parse(input)
 	dataParser = (d) ->
@@ -11,7 +16,6 @@ module.factory 'caD3Svc', ($q, $filter) ->
 		d.close = +d.close
 		d.volume = +d.volume
 		d
-
 	dataTransform = (data, baseline, field) ->
 		# pull basline values out
 		chartData.some((exchange) -> exchange.key is baseline && baseline = exchange.values)
@@ -161,7 +165,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 				.attr("transform", "translate(#{ marginFocus.l * 2 }, 0)")
 
 		# expose only things needed by render
-		c =
+		chartObj =
 			transitionDuration: transitionDuration
 			hFocus: hFocus
 			hContext: hContext
@@ -180,12 +184,9 @@ module.factory 'caD3Svc', ($q, $filter) ->
 			context: context
 			infoBox: infoBox
 
-		_deferred.resolve {
-			msg: "pre-rendered"
-			c: c
-			t: moment.duration(moment().diff(_startT), 'ms').asSeconds()
-		}
-		_deferred.promise
+		time.preRender = moment.duration(moment().diff(_startT), 'ms').asSeconds()
+
+		_deferred.resolve {msg: "pre-rendered"}; _deferred.promise
 
 	fetch: (uri) -> # incl. data transform
 		_startT = moment()
@@ -194,147 +195,146 @@ module.factory 'caD3Svc', ($q, $filter) ->
 		d3.tsv uri, dataParser, (err, data) ->
 			# deferred.notify "working..."
 			if err?
-				_deferred.reject {
-					msg: "fetching failed"
-					error: err
-					t: moment.duration(moment().diff(_startT), 'ms').asSeconds()
-				}
+				_deferred.reject {msg: "fetching failed", error: err}
 			else
 				chartData = d3.nest()
 						.key((d) -> d.exchange) # group by this key
 						.entries(data) # apply to this data
 
-				_deferred.resolve {
-					msg: "fetched"
-					t: moment.duration(moment().diff(_startT), 'ms').asSeconds()
-				}
+				time.fetch = moment.duration(moment().diff(_startT), 'ms').asSeconds()
+				_deferred.resolve {msg: "fetched"}
 			return
 		_deferred.promise
 
-	render: (resolve) ->
-		c = resolve[0].c
-		resolved = resolve[1]
+	render: (chartType, brushExtentInit) ->
+		(resolve) ->
+			console.log(chartType)
+			c = chartObj
 
-		_deferred = $q.defer()
+			_deferred = $q.defer()
+			_startT = moment()
 
-		_startT = moment()
+			# brush
+			c.brushed = ->
+				c.xFocus.domain(if c.brush.empty() then c.xContext.domain() else c.brush.extent())
+				#			yMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.close))
+				#			c.yFocus.domain([0, yMax])
+				#			c.yFocus.domain(if c.brush.empty() then c.yFocus.domain() else c.brush.extent())
+				c.focus.selectAll("path.line").attr("d", (d) -> c.lineFocus(d.values))
+				c.focus.select(".xFocus").call(c.axisXFocus)
+				#			c.focus.select(".yFocus").call(c.axisY)
+				return
+			c.brush = d3.svg.brush()
+					.x(c.xContext)
+					.on("brush", c.brushed) # .x only so don't brush y axis
 
-		# brush
-		c.brushExtend = null # change this for date grouping
-		c.brushExtend = [dateParser("1/1/13"), dateParser("12/31/13")] # change this for date grouping
-		c.brushed = ->
-			c.xFocus.domain(if c.brush.empty() then c.xContext.domain() else c.brush.extent())
-			#			yMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.close))
-			#			c.yFocus.domain([0, yMax])
-			#			c.yFocus.domain(if c.brush.empty() then c.yFocus.domain() else c.brush.extent())
-			c.focus.selectAll("path.line").attr("d", (d) -> c.lineFocus(d.values))
-			c.focus.select(".xFocus").call(c.axisXFocus)
-			#			c.focus.select(".yFocus").call(c.axisY)
-			return
-		c.brush = d3.svg.brush().x(c.xContext)
-		c.brush.extent(c.brushExtend) if c.brushExtend?
-		c.brush.on("brush", c.brushed) # .x only so don't brush y axis
+			# ===========================
+			# render all
 
-		# ===========================
-		# render all
+			# color.domain(d3.keys(_data[0]).filter((key) -> key is "exchange")) # just returns ['exchange'], not sure what for
+			c.color.domain(chartData.map((d) -> return d.key))
+			# color domain optional but a good idea for deterministic behavior
+			# as inferring the domain from usage will be dependent on ordering
 
-		# color.domain(d3.keys(_data[0]).filter((key) -> key is "exchange")) # just returns ['exchange'], not sure what for
-		c.color.domain(chartData.map((d) -> return d.key))
-		# color domain optional but a good idea for deterministic behavior
-		# as inferring the domain from usage will be dependent on ordering
+			xMin = d3.min(chartData, (d) -> d3.min(d.values, (d) -> d.date))
+			xMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.date))
+			yMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.close))
+			c.xFocus.domain([xMin, xMax])
+			c.yFocus.domain([0, yMax])
+			c.xContext.domain(c.xFocus.domain())
+			c.yContext.domain(c.yFocus.domain())
 
-		xMin = d3.min(chartData, (d) -> d3.min(d.values, (d) -> d.date))
-		xMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.date))
-		yMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.close))
-		c.xFocus.domain([xMin, xMax])
-		c.yFocus.domain([0, yMax])
-		c.xContext.domain(c.xFocus.domain())
-		c.yContext.domain(c.yFocus.domain())
+			# render x axis
+			c.focus.append("g")
+					.attr "class", "axis xFocus"
+					.attr "transform", "translate(0, #{ c.hFocus })"
+					.call c.axisXFocus
 
-		# render x axis
-		c.focus.append("g")
-				.attr "class", "axis xFocus"
-				.attr "transform", "translate(0, #{ c.hFocus })"
-				.call c.axisXFocus
+			# render y axis
+			c.focus.append("g")
+					.attr "class", "axis yFocus"
+					.call c.axisY
+				.append "text"
+					.attr "class", "axis label"
+					.attr "transform", "rotate(-90)"
+					.attr "y", 6
+					.attr "dy", "1em" # shift along y axis
+					.text "per Bitcoin"
 
-		# render y axis
-		c.focus.append("g")
-				.attr "class", "axis yFocus"
-				.call c.axisY
-			.append "text"
-				.attr "class", "axis label"
-				.attr "transform", "rotate(-90)"
-				.attr "y", 6
-				.attr "dy", "1em" # shift along y axis
-				.text "per Bitcoin"
+			# render clip path & g for lines
+			focusExchanges = c.focus.selectAll ".exchange"
+					.data chartData, (d) -> d.key
+				.enter().append "g"
+					.attr "clip-path", "url(#focus-clip)"
+					.attr "class", "exchange"
 
-		# render clip path & g for lines
-		focusExchanges = c.focus.selectAll ".exchange"
-				.data chartData, (d) -> d.key
-			.enter().append "g"
-				.attr "clip-path", "url(#focus-clip)"
-				.attr "class", "exchange"
+			# render lines
+			focusExchanges.append("path")
+					.attr "d", (d) -> c.lineFocus(d.values)
+					.attr("data-legend", (d) -> d.key) # add this attr for legend f() to render legend
+					.attr("class", "line focus") # focus:hover changes stroke-width
+					.style("stroke", (d) -> c.color(d.key))
 
-		# render lines
-		focusExchanges.append("path")
-				.attr "d", (d) -> c.lineFocus(d.values)
-				.attr("data-legend", (d) -> d.key) # add this attr for legend f() to render legend
-				.attr("class", "line focus") # focus:hover changes stroke-width
-				.style("stroke", (d) -> c.color(d.key))
+			# render legend
+			c.focus.append("g")
+					.attr("class", "legend")
+					.attr("transform", "translate(50,30)")
+					.style("font-size", "12px")
+					.call(legend)
 
-		# render legend
-		c.focus.append("g")
-				.attr("class", "legend")
-				.attr("transform", "translate(50,30)")
-				.style("font-size", "12px")
-				.call(legend)
+			# ============================
 
-		# ============================
+			# render x axis
+			c.context.append("g")
+					.attr("class", "axis xContext")
+					.attr("transform", "translate(0, #{ c.hContext })")
+					.call(c.axisXContext)
 
-		# render x axis
-		c.context.append("g")
-				.attr("class", "axis xContext")
-				.attr("transform", "translate(0, #{ c.hContext })")
-				.call(c.axisXContext)
+			# render brush
+			c.context.append("g")
+					.attr("class", "brush")
+					.call(c.brush)
+				.selectAll("rect")
+					.attr("y", -6)
+					.attr("height", c.hContext + 7)
 
-		# render y axis
-		c.context.append("g")
-				.attr("class", "x brush")
-				.call(c.brush)
-			.selectAll("rect")
-				.attr("y", -6)
-				.attr("height", c.hContext + 7)
+			# render g for lines
+			contextExchanges = c.context.selectAll(".exchange")
+					.data(chartData, (d) -> d.key)
+					.enter().append("g")
+					.attr("class", "exchange")
 
-		# render g for lines
-		contextExchanges = c.context.selectAll(".exchange")
-				.data(chartData, (d) -> d.key)
-				.enter().append("g")
-				.attr("class", "exchange")
+			# render lines
+			contextExchanges.append("path")
+					.attr("class", "line")
+					.attr("d", (d) -> c.lineContext(d.values))
+					.style("stroke", (d) -> c.color(d.key))
 
-		# render lines
-		contextExchanges.append("path")
-				.attr("class", "line")
-				.attr("d", (d) -> c.lineContext(d.values))
-				.style("stroke", (d) -> c.color(d.key))
+			# ============================
 
-		# ============================
+			# render initial brush
+#			if brushExtentInit?
+#				brushExtentInit.forEach (item, i, arr) -> arr[i] = dateParser(item); return
+#				c.context.select '.brush'
+#						.call c.brush.extent(brushExtentInit) # set brushed area
+#						.call c.brushed # calc brush
 
-		_renderT = moment.duration(moment().diff(_startT), 'ms').asSeconds()
-		_totalT = $filter("round")(resolved.t + _renderT)
+			# ============================
 
-		c.infoBox.append("text")
+			time.render = moment.duration(moment().diff(_startT), 'ms').asSeconds()
+			_deferred.resolve(); _deferred.promise
+
+	renderInfoBox: ->
+		_totalT = 0
+		_totalT += time[t] for t of time
+		chartObj.infoBox.append("text")
 				.attr("dy", "1em") # shift along y axis from top
-				.text("Generated by CoinArb in #{ _totalT } s.")
-
-		_deferred.resolve({
-			data: resolved
-			c: c
-		})
-
-		_deferred.promise
+				.text("Generated by CoinArb in #{ $filter("round")(_totalT) } s.")
+		return
 
 	transform: dataTransform
-	data: -> chartData # = chartData doesn't work
+	chartData: -> chartData # = chartData doesn't work
+	chartObj: -> chartObj
 
 module.directive 'caChart', ($q, $filter, caD3Svc) ->
 	templateUrl: 'ca-chart/ca-chart.html'
@@ -343,6 +343,7 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 		data: "="
 	link: (scope, ele) ->
 		scope.rendered = false
+		scope.brushExtentInit = ["10/1/13", "1/15/14"]
 		scope.baseline = scope.$parent.app.baseline
 		scope.$on "baselineSet", (event, baseline) -> scope.baseline = baseline; return
 
@@ -353,31 +354,32 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 		notifyCb = (what) -> console.log what; return
 
 		$q.all([preRenderP, fetchP])
-		.then(caD3Svc.render, errorCb, notifyCb)
-		.then( (resolved)->
-				scope.rendered = true
-				scope.c = resolved.c
-				scope.data = caD3Svc.data()
-				return
-			)
+				.then(caD3Svc.render("relative", scope.brushExtentInit), errorCb, notifyCb)
+				.then( ->
+						caD3Svc.renderInfoBox()
+						scope.rendered = true
+						scope.c = caD3Svc.chartObj()
+						scope.data = caD3Svc.chartData()
+						return)
 
-		scope.update = ->
-			console.log(scope.data)
-			caD3Svc.transform(scope.data, scope.baseline, "close")
-			yMinNew = d3.min(scope.data, (d) -> d3.min(d.values, (d) -> d.delta))
-			yMaxNew = d3.max(scope.data, (d) -> d3.max(d.values, (d) -> d.delta))
-			console.log(yMinNew, yMaxNew)
-			axisNew = d3.svg.axis()
-					.scale d3.scale.linear().domain([yMinNew, yMaxNew]).range([scope.c.hFocus, 0])
-					.orient "left"
-					.ticks 5, "+%"
-			scope.c.yFocus.domain([yMinNew, yMaxNew])
-			scope.c.focus.select ".axis.yFocus"
-					.transition().duration(scope.c.transitionDuration)
-					.call axisNew
-			scope.c.focus.selectAll ".line.focus"
-					.transition().duration(scope.c.transitionDuration)
-					.attr "d", (d) -> scope.c.lineDelta(d.values)
+		scope.update = (chartType) ->
+			if chartType is "absolute"
+				caD3Svc.render("absolute", scope.brushExtentInit)()
+			else
+				caD3Svc.transform(scope.data, scope.baseline, "close")
+				yMinNew = d3.min(scope.data, (d) -> d3.min(d.values, (d) -> d.delta))
+				yMaxNew = d3.max(scope.data, (d) -> d3.max(d.values, (d) -> d.delta))
+				axisNew = d3.svg.axis()
+						.scale d3.scale.linear().domain([yMinNew, yMaxNew]).range([scope.c.hFocus, 0])
+						.orient "left"
+						.ticks 5, "+%"
+				scope.c.yFocus.domain([yMinNew, yMaxNew])
+				scope.c.focus.select ".axis.yFocus"
+						.transition().duration(scope.c.transitionDuration)
+						.call axisNew
+				scope.c.focus.selectAll ".line.focus"
+						.transition().duration(scope.c.transitionDuration)
+						.attr "d", (d) -> scope.c.lineDelta(d.values)
 			return
 
 		return
