@@ -39,11 +39,11 @@ nav {
 	background-color: black;
 	text-align: center;
 
-	div.ca-clock {
+	.ca-clock {
 		font-family: @font-family-monospace;
 	}
 
-	div.ca-nav-item {
+	.ca-nav-item {
 		width: 100%;
 		line-height: 60px;
 
@@ -180,12 +180,10 @@ a.ca-btn {
 	color: @ca-dark-3;
 	.transition(all 0.2s @ca-easing-func);
 
-	&:hover { color: @ca-dark-4; }
+	&:hover { color: @ca-dark-4 }
 }
 
-.label {
-	font-weight: normal;
-}
+.label { font-weight: normal }
 
 div.ca-loader {
 //	z-index: 999;
@@ -220,3 +218,5 @@ div.ca-blur {
 		-webkit-filter: none;
 	}
 }
+
+.ca-beta {font-family: @font-family-monospace; font-weight: bold; color: @brand-info}

@@ -103,11 +103,11 @@ module.factory 'caD3Svc', ($q, $filter) ->
 		marginBase = 55 # for multipliers
 		marginFocus =
 			t: marginBase / 3
-			l: marginBase, r: 0
+			l: marginBase, r: marginBase / 3
 			b: hOrig * .4
 		marginContext =
 			t: hOrig * .6 + marginBase / 2
-			l: marginBase, r: 0
+			l: marginBase, r: marginBase / 3
 			b: marginBase * .4
 		w = wOrig - marginFocus.l - marginFocus.r
 		hFocus = hOrig - marginFocus.t - marginFocus.b

@@ -22,7 +22,8 @@
     "socket.io-client": "~0.9.16",
     "angular-poller": "~0.1.1",
     "font-awesome": "~4.0.3",
-    "d3": "~3.4.1"
+    "d3": "~3.4.1",
+    "screenfull": "~1.1.1"
   },
   "devDependencies": {
     "lodash": "~2.4.1",

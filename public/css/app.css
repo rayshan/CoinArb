@@ -5937,17 +5937,17 @@ nav {
   background-color: black;
   text-align: center;
 }
-nav div.ca-clock {
+nav .ca-clock {
   font-family: 'Ubuntu Mono', monospace;
 }
-nav div.ca-nav-item {
+nav .ca-nav-item {
   width: 100%;
   line-height: 60px;
 }
-nav div.ca-nav-item i {
+nav .ca-nav-item i {
   vertical-align: middle;
 }
-nav div.ca-nav-item:hover {
+nav .ca-nav-item:hover {
   background-color: #e6e6e6;
   color: #0d0d0d;
 }
@@ -6139,4 +6139,9 @@ div.ca-blur {
 div.ca-blur.disabled {
   filter: none;
   -webkit-filter: none;
+}
+.ca-beta {
+  font-family: 'Ubuntu Mono', monospace;
+  font-weight: bold;
+  color: #5bc0de;
 }
