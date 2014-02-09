@@ -92,7 +92,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 
 		transitionDuration = 250
 
-		canvas = ele[0].querySelector(".ca-chart-line").children[0]
+		canvas = ele[0].querySelector(".ca-chart-line").children[1] # 0 is buttons div
 
 		# update = -> canvas.transition().duration(transitionDuration).call(c)
 

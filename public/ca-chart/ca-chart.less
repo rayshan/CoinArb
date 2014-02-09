@@ -1,0 +1,69 @@
+.ca-chart-line {
+	cursor: crosshair;
+	text-align: center;
+
+	text {
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+
+	.line {
+		fill: none;
+		stroke-width: 1.5px;
+
+		&.focus:hover { stroke-width: 3px }
+		// crispEdges or 1px line look bad due to curved lines
+	}
+
+	.axis {
+		text {
+			font: 10px sans-serif;
+			fill: @ca-light-2;
+		}
+
+		.label {
+			fill: @ca-light-2;
+			font: 10px sans-serif;
+			text-anchor: end;
+		}
+
+		path, line {
+			fill: none;
+			stroke: @ca-light-2;
+			shape-rendering: crispEdges;
+		}
+	}
+
+	.brush .extent {
+		fill: white;
+		//		stroke: @ca-dark-3;
+		fill-opacity: .25;
+		shape-rendering: crispEdges;
+	}
+
+	.legend {
+		.box { fill: none }
+		.items {
+			font: 10px sans-serif;
+			fill: @ca-light-2;
+		}
+	}
+
+	#info-box {
+		text {
+			font: 10px sans-serif;
+			fill: @ca-light-2;
+			text-anchor: start;
+		}
+	}
+
+	.ca-chart-options {
+		position: absolute;
+//		margin: auto;
+		top: 0; left: 0; right: 0;
+	}
+}

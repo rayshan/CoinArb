@@ -5869,6 +5869,63 @@ td.visible-print {
     display: none !important;
   }
 }
+.ca-chart-line {
+  cursor: crosshair;
+  text-align: center;
+}
+.ca-chart-line text {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.ca-chart-line .line {
+  fill: none;
+  stroke-width: 1.5px;
+}
+.ca-chart-line .line.focus:hover {
+  stroke-width: 3px;
+}
+.ca-chart-line .axis text {
+  font: 10px sans-serif;
+  fill: #808080;
+}
+.ca-chart-line .axis .label {
+  fill: #808080;
+  font: 10px sans-serif;
+  text-anchor: end;
+}
+.ca-chart-line .axis path,
+.ca-chart-line .axis line {
+  fill: none;
+  stroke: #808080;
+  shape-rendering: crispEdges;
+}
+.ca-chart-line .brush .extent {
+  fill: white;
+  fill-opacity: .25;
+  shape-rendering: crispEdges;
+}
+.ca-chart-line .legend .box {
+  fill: none;
+}
+.ca-chart-line .legend .items {
+  font: 10px sans-serif;
+  fill: #808080;
+}
+.ca-chart-line #info-box text {
+  font: 10px sans-serif;
+  fill: #808080;
+  text-anchor: start;
+}
+.ca-chart-line .ca-chart-options {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
 body {
   background-color: #0d0d0d;
   color: #808080;
@@ -6082,54 +6139,4 @@ div.ca-blur {
 div.ca-blur.disabled {
   filter: none;
   -webkit-filter: none;
-}
-.ca-chart-line {
-  cursor: crosshair;
-}
-.ca-chart-line text {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-.ca-chart-line .line {
-  fill: none;
-  stroke-width: 1.5px;
-}
-.ca-chart-line .line.focus:hover {
-  stroke-width: 3px;
-}
-.ca-chart-line .axis text {
-  font: 10px sans-serif;
-  fill: #808080;
-}
-.ca-chart-line .axis .label {
-  fill: #808080;
-  font: 10px sans-serif;
-  text-anchor: end;
-}
-.ca-chart-line .axis path,
-.ca-chart-line .axis line {
-  fill: none;
-  stroke: #808080;
-  shape-rendering: crispEdges;
-}
-.ca-chart-line .brush .extent {
-  fill: white;
-  fill-opacity: .25;
-  shape-rendering: crispEdges;
-}
-.ca-chart-line .legend .box {
-  fill: none;
-}
-.ca-chart-line .legend .items {
-  font: 10px sans-serif;
-  fill: #808080;
-}
-.ca-chart-line #info-box text {
-  font: 10px sans-serif;
-  fill: #808080;
-  text-anchor: start;
 }

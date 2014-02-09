@@ -1,5 +1,6 @@
 @import "../bower_components/bootstrap/less/bootstrap.less";
 @import "../bower_components/less-prefixer/prefixer.less";
+@import "../ca-chart/ca-chart.less";
 @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700);
 @import url(https://fonts.googleapis.com/css?family=Droid+Sans:400,700);
 
@@ -139,7 +140,7 @@ div#wrapper {
 	}
 
 	section#ca-chart {
-		position: relative;
+		position: relative; // required to make loader centered
 		height: (1 - @ca-split - 0.01) * 100vh;
 		// hack to remove scroll bar, otherwise returns 30.0000000001 vh wtf
 	}
@@ -218,68 +219,4 @@ div.ca-blur {
 		filter: none;
 		-webkit-filter: none;
 	}
-}
-
-.ca-chart-line {
-	cursor: crosshair;
-
-	text {
-		-webkit-touch-callout: none;
-		-webkit-user-select: none;
-		-khtml-user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
-	}
-
-	.line {
-		fill: none;
-		stroke-width: 1.5px;
-
-		&.focus:hover { stroke-width: 3px }
-		// crispEdges or 1px line look bad due to curved lines
-	}
-
-	.axis {
-		text {
-			font: 10px sans-serif;
-			fill: @ca-light-2;
-		}
-
-		.label {
-			fill: @ca-light-2;
-			font: 10px sans-serif;
-			text-anchor: end;
-		}
-
-		path, line {
-			fill: none;
-			stroke: @ca-light-2;
-			shape-rendering: crispEdges;
-		}
-	}
-
-	.brush .extent {
-		fill: white;
-//		stroke: @ca-dark-3;
-		fill-opacity: .25;
-		shape-rendering: crispEdges;
-	}
-
-	.legend {
-		.box { fill: none }
-		.items {
-			font: 10px sans-serif;
-			fill: @ca-light-2;
-		}
-	}
-
-	#info-box {
-		text {
-			font: 10px sans-serif;
-			fill: @ca-light-2;
-			text-anchor: start;
-		}
-	}
-
 }

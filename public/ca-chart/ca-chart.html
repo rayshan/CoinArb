@@ -2,9 +2,19 @@
 	<i class="fa fa-refresh fa-spin fa-5x"></i>
 </div>
 
-<button class="btn btn-primary btn-sm" ng-click="update('absolute')">Absolute</button>
-<button class="btn btn-primary btn-sm" ng-click="update('relative')">Relative</button>
 <div class="ca-chart-line ca-blur" ng-class="rendered ? 'disabled' : ''">
+	<div class="ca-chart-options">
+		<button class="btn btn-primary btn-sm" ng-click="update('absolute')">Absolute</button>
+		<button class="btn btn-primary btn-sm" ng-click="update('relative')">Relative</button>
+
+		<div class="btn-group">
+			<button type="button" class="btn btn-primary btn-sm">7d</button>
+			<button type="button" class="btn btn-primary btn-sm">1m</button>
+			<button type="button" class="btn btn-primary btn-sm">6m</button>
+			<button type="button" class="btn btn-primary btn-sm">1y</button>
+			<button type="button" class="btn btn-primary btn-sm">max</button>
+		</div>
+	</div>
 
 	<svg></svg>
 

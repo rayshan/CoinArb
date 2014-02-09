@@ -90,7 +90,7 @@
         _startT = moment();
         _deferred = $q.defer();
         transitionDuration = 250;
-        canvas = ele[0].querySelector(".ca-chart-line").children[0];
+        canvas = ele[0].querySelector(".ca-chart-line").children[1];
         wOrig = d3.select(canvas).node().offsetWidth;
         hOrig = d3.select(canvas).node().offsetHeight;
         marginBase = 55;
