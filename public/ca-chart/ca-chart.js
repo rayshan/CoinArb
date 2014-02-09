@@ -95,7 +95,7 @@
         hOrig = d3.select(canvas).node().offsetHeight;
         marginBase = 55;
         marginFocus = {
-          t: 0,
+          t: marginBase / 3,
           l: marginBase,
           r: 0,
           b: hOrig * .4
@@ -116,7 +116,9 @@
         yContext = d3.scale.linear().range([hContext, 0]);
         axisXFocus = d3.svg.axis().scale(xFocus).orient("bottom");
         axisXContext = d3.svg.axis().scale(xContext).orient("bottom");
-        axisY = d3.svg.axis().scale(yFocus).orient("left").ticks(10, "$");
+        axisY = function(chartType) {
+          return d3.svg.axis().scale(yFocus).orient("left").ticks(10, chartType === "absolute" ? "$" : "+%");
+        };
         lineFocus = d3.svg.line().interpolate("basis").x(function(d) {
           return xFocus(d.date);
         }).y(function(d) {
@@ -186,8 +188,7 @@
       },
       render: function(chartType, brushExtentInit) {
         return function(resolve) {
-          var c, contextExchanges, focusExchanges, xMax, xMin, yMax, _deferred, _startT;
-          console.log(chartType);
+          var axisYObj, c, contextExchanges, focusExchanges, focusPaths, xMax, xMin, yMax, yMin, _deferred, _startT;
           c = chartObj;
           _deferred = $q.defer();
           _startT = moment();
@@ -212,27 +213,52 @@
               return d.date;
             });
           });
+          yMin = chartType === "absolute" ? 0 : d3.min(chartData, function(d) {
+            return d3.min(d.values, function(d) {
+              return d.delta;
+            });
+          });
           yMax = d3.max(chartData, function(d) {
             return d3.max(d.values, function(d) {
-              return d.close;
+              if (chartType === "absolute") {
+                return d.close;
+              } else {
+                return d.delta;
+              }
             });
           });
           c.xFocus.domain([xMin, xMax]);
-          c.yFocus.domain([0, yMax]);
+          c.yFocus.domain([yMin, yMax]);
           c.xContext.domain(c.xFocus.domain());
           c.yContext.domain(c.yFocus.domain());
           c.focus.append("g").attr("class", "axis xFocus").attr("transform", "translate(0, " + c.hFocus + ")").call(c.axisXFocus);
-          c.focus.append("g").attr("class", "axis yFocus").call(c.axisY).append("text").attr("class", "axis label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "1em").text("per Bitcoin");
+          axisYObj = c.focus.select(".axis.yFocus");
+          if (axisYObj.empty()) {
+            c.focus.append("g").attr("class", "axis yFocus").call(c.axisY(chartType)).append("text").attr("class", "axis label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "1em").text("per Bitcoin");
+          } else {
+            axisYObj.transition().duration(c.transitionDuration).call(c.axisY(chartType));
+          }
           focusExchanges = c.focus.selectAll(".exchange").data(chartData, function(d) {
             return d.key;
           }).enter().append("g").attr("clip-path", "url(#focus-clip)").attr("class", "exchange");
-          focusExchanges.append("path").attr("d", function(d) {
-            return c.lineFocus(d.values);
-          }).attr("data-legend", function(d) {
-            return d.key;
-          }).attr("class", "line focus").style("stroke", function(d) {
-            return c.color(d.key);
-          });
+          focusPaths = c.focus.selectAll(".line.focus");
+          if (focusPaths.empty()) {
+            focusExchanges.append("path").attr("d", function(d) {
+              return c.lineFocus(d.values);
+            }).attr("data-legend", function(d) {
+              return d.key;
+            }).attr("class", "line focus").style("stroke", function(d) {
+              return c.color(d.key);
+            });
+          } else {
+            focusPaths.transition().duration(c.transitionDuration).attr("d", function(d) {
+              if (chartType === "absolute") {
+                return c.lineFocus(d.values);
+              } else {
+                return c.lineDelta(d.values);
+              }
+            });
+          }
           c.focus.append("g").attr("class", "legend").attr("transform", "translate(50,30)").style("font-size", "12px").call(legend);
           c.context.append("g").attr("class", "axis xContext").attr("transform", "translate(0, " + c.hContext + ")").call(c.axisXContext);
           c.context.append("g").attr("class", "brush").call(c.brush).selectAll("rect").attr("y", -6).attr("height", c.hContext + 7);
@@ -290,34 +316,18 @@
         notifyCb = function(what) {
           console.log(what);
         };
-        $q.all([preRenderP, fetchP]).then(caD3Svc.render("relative", scope.brushExtentInit), errorCb, notifyCb).then(function() {
+        $q.all([preRenderP, fetchP]).then(caD3Svc.render("absolute", scope.brushExtentInit), errorCb, notifyCb).then(function() {
           caD3Svc.renderInfoBox();
           scope.rendered = true;
           scope.c = caD3Svc.chartObj();
           scope.data = caD3Svc.chartData();
         });
         scope.update = function(chartType) {
-          var axisNew, yMaxNew, yMinNew;
           if (chartType === "absolute") {
             caD3Svc.render("absolute", scope.brushExtentInit)();
           } else {
             caD3Svc.transform(scope.data, scope.baseline, "close");
-            yMinNew = d3.min(scope.data, function(d) {
-              return d3.min(d.values, function(d) {
-                return d.delta;
-              });
-            });
-            yMaxNew = d3.max(scope.data, function(d) {
-              return d3.max(d.values, function(d) {
-                return d.delta;
-              });
-            });
-            axisNew = d3.svg.axis().scale(d3.scale.linear().domain([yMinNew, yMaxNew]).range([scope.c.hFocus, 0])).orient("left").ticks(5, "+%");
-            scope.c.yFocus.domain([yMinNew, yMaxNew]);
-            scope.c.focus.select(".axis.yFocus").transition().duration(scope.c.transitionDuration).call(axisNew);
-            scope.c.focus.selectAll(".line.focus").transition().duration(scope.c.transitionDuration).attr("d", function(d) {
-              return scope.c.lineDelta(d.values);
-            });
+            caD3Svc.render("relative", scope.brushExtentInit)();
           }
         };
       }

@@ -102,7 +102,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 		# offsetW / H = border + padding + vertical scrollbar (if present & rendered) + CSS width
 		marginBase = 55 # for multipliers
 		marginFocus =
-			t: 0
+			t: marginBase / 3
 			l: marginBase, r: 0
 			b: hOrig * .4
 		marginContext =
@@ -123,10 +123,9 @@ module.factory 'caD3Svc', ($q, $filter) ->
 		# axis
 		axisXFocus = d3.svg.axis().scale(xFocus).orient("bottom")
 		axisXContext = d3.svg.axis().scale(xContext).orient("bottom") # different for brushing
-		axisY = d3.svg.axis() # only 1 b/c context has no y axis
-				.scale yFocus
-				.orient "left"
-				.ticks 10, "$"
+		axisY = (chartType) -> # only 1 b/c context has no y axis
+			d3.svg.axis().scale(yFocus).orient "left"
+					.ticks(10, if chartType is "absolute" then "$" else "+%")
 
 		# line rendering f, 1 for focus, 1 for context
 		lineFocus = d3.svg.line()
@@ -208,7 +207,6 @@ module.factory 'caD3Svc', ($q, $filter) ->
 
 	render: (chartType, brushExtentInit) ->
 		(resolve) ->
-			console.log(chartType)
 			c = chartObj
 
 			_deferred = $q.defer()
@@ -238,9 +236,11 @@ module.factory 'caD3Svc', ($q, $filter) ->
 
 			xMin = d3.min(chartData, (d) -> d3.min(d.values, (d) -> d.date))
 			xMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.date))
-			yMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.close))
+			yMin = if chartType is "absolute" then 0 else d3.min(chartData, (d) -> d3.min(d.values, (d) -> d.delta))
+			yMax = d3.max(chartData, (d) -> d3.max(d.values, (d) ->
+				if chartType is "absolute" then d.close else d.delta))
 			c.xFocus.domain([xMin, xMax])
-			c.yFocus.domain([0, yMax])
+			c.yFocus.domain([yMin, yMax])
 			c.xContext.domain(c.xFocus.domain())
 			c.yContext.domain(c.yFocus.domain())
 
@@ -251,15 +251,18 @@ module.factory 'caD3Svc', ($q, $filter) ->
 					.call c.axisXFocus
 
 			# render y axis
-			c.focus.append("g")
-					.attr "class", "axis yFocus"
-					.call c.axisY
-				.append "text"
-					.attr "class", "axis label"
-					.attr "transform", "rotate(-90)"
-					.attr "y", 6
-					.attr "dy", "1em" # shift along y axis
-					.text "per Bitcoin"
+			axisYObj = c.focus.select(".axis.yFocus")
+			if axisYObj.empty()
+				c.focus.append("g")
+						.attr "class", "axis yFocus"
+						.call c.axisY(chartType)
+					.append "text"
+						.attr "class", "axis label"
+						.attr "transform", "rotate(-90)"
+						.attr "y", 6
+						.attr "dy", "1em" # shift along y axis
+						.text "per Bitcoin"
+			else axisYObj.transition().duration(c.transitionDuration).call(c.axisY(chartType))
 
 			# render clip path & g for lines
 			focusExchanges = c.focus.selectAll ".exchange"
@@ -269,11 +272,17 @@ module.factory 'caD3Svc', ($q, $filter) ->
 					.attr "class", "exchange"
 
 			# render lines
-			focusExchanges.append("path")
-					.attr "d", (d) -> c.lineFocus(d.values)
-					.attr("data-legend", (d) -> d.key) # add this attr for legend f() to render legend
-					.attr("class", "line focus") # focus:hover changes stroke-width
-					.style("stroke", (d) -> c.color(d.key))
+			focusPaths = c.focus.selectAll(".line.focus")
+			if focusPaths.empty()
+				focusExchanges.append("path")
+						.attr "d", (d) -> c.lineFocus(d.values)
+						.attr("data-legend", (d) -> d.key) # add this attr for legend f() to render legend
+						.attr("class", "line focus") # focus:hover changes stroke-width
+						.style("stroke", (d) -> c.color(d.key))
+			else
+				focusPaths
+						.transition().duration(c.transitionDuration)
+						.attr "d", (d) -> if chartType is "absolute" then c.lineFocus(d.values) else c.lineDelta(d.values)
 
 			# render legend
 			c.focus.append("g")
@@ -354,7 +363,7 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 		notifyCb = (what) -> console.log what; return
 
 		$q.all([preRenderP, fetchP])
-				.then(caD3Svc.render("relative", scope.brushExtentInit), errorCb, notifyCb)
+				.then(caD3Svc.render("absolute", scope.brushExtentInit), errorCb, notifyCb)
 				.then( ->
 						caD3Svc.renderInfoBox()
 						scope.rendered = true
@@ -367,19 +376,20 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 				caD3Svc.render("absolute", scope.brushExtentInit)()
 			else
 				caD3Svc.transform(scope.data, scope.baseline, "close")
-				yMinNew = d3.min(scope.data, (d) -> d3.min(d.values, (d) -> d.delta))
-				yMaxNew = d3.max(scope.data, (d) -> d3.max(d.values, (d) -> d.delta))
-				axisNew = d3.svg.axis()
-						.scale d3.scale.linear().domain([yMinNew, yMaxNew]).range([scope.c.hFocus, 0])
-						.orient "left"
-						.ticks 5, "+%"
-				scope.c.yFocus.domain([yMinNew, yMaxNew])
-				scope.c.focus.select ".axis.yFocus"
-						.transition().duration(scope.c.transitionDuration)
-						.call axisNew
-				scope.c.focus.selectAll ".line.focus"
-						.transition().duration(scope.c.transitionDuration)
-						.attr "d", (d) -> scope.c.lineDelta(d.values)
+				caD3Svc.render("relative", scope.brushExtentInit)()
+#				yMinNew = d3.min(scope.data, (d) -> d3.min(d.values, (d) -> d.delta))
+#				yMaxNew = d3.max(scope.data, (d) -> d3.max(d.values, (d) -> d.delta))
+#				axisNew = d3.svg.axis()
+#						.scale d3.scale.linear().domain([yMinNew, yMaxNew]).range([scope.c.hFocus, 0])
+#						.orient "left"
+#						.ticks 5, "+%"
+#				scope.c.yFocus.domain([yMinNew, yMaxNew])
+#				scope.c.focus.select ".axis.yFocus"
+#						.transition().duration(scope.c.transitionDuration)
+#						.call axisNew
+#				scope.c.focus.selectAll ".line.focus"
+#						.transition().duration(scope.c.transitionDuration)
+#						.attr "d", (d) -> scope.c.lineDelta(d.values)
 			return
 
 		return
