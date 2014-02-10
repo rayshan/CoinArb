@@ -17,7 +17,7 @@
     };
     $interval(this.getTime, 1);
     this.data = exchangeSvc.data;
-    this.dataChart = "data/data.tsv";
+    this.dataChartUri = "data/data.tsv";
     this.showCount = function() {
       var count, data, exchange, _ref;
       count = 0;

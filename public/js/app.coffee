@@ -18,7 +18,7 @@ app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
 	$interval @getTime, 1
 
 	@data = exchangeSvc.data
-	@dataChart = "data/data.tsv"
+	@dataChartUri = "data/data.tsv"
 
 	@showCount = () ->
 		count = 0

@@ -5,9 +5,10 @@
   module = angular.module('CaChartModule', []);
 
   module.factory('caD3Svc', function($q, $filter) {
-    var chartData, chartObj, dataParser, dataTransform, dateParser, legend, time;
+    var chartData, chartObj, dataParser, dataTransform, dateParser, initRender, legend, time;
     chartData = null;
     chartObj = null;
+    initRender = true;
     time = {
       preRender: null,
       fetch: null,
@@ -86,7 +87,7 @@
     };
     return {
       preRender: function(ele) {
-        var axisXContext, axisXFocus, axisY, canvas, chart, color, context, focus, hContext, hFocus, hOrig, infoBox, lineContext, lineDelta, lineFocus, marginBase, marginContext, marginFocus, transitionDuration, w, wOrig, xContext, xFocus, yContext, yFocus, _deferred, _startT;
+        var axisXContext, axisXFocus, axisY, canvas, chart, color, context, focus, hContext, hFocus, hOrig, infoBox, lineContext, lineContextDelta, lineFocus, lineFocusDelta, marginBase, marginContext, marginFocus, transitionDuration, w, wOrig, xContext, xFocus, yContext, yFocus, _deferred, _startT;
         _startT = moment();
         _deferred = $q.defer();
         transitionDuration = 250;
@@ -129,10 +130,15 @@
         }).y(function(d) {
           return yContext(d.close);
         });
-        lineDelta = d3.svg.line().interpolate("basis").x(function(d) {
+        lineFocusDelta = d3.svg.line().interpolate("basis").x(function(d) {
           return xFocus(d.date);
         }).y(function(d) {
           return yFocus(d.delta);
+        });
+        lineContextDelta = d3.svg.line().interpolate("basis").x(function(d) {
+          return xContext(d.date);
+        }).y(function(d) {
+          return yContext(d.delta);
         });
         chart = d3.select(canvas).attr("width", w + marginFocus.l + marginFocus.r).attr("height", hFocus + marginFocus.t + marginFocus.b);
         chart.append("defs").append("clipPath").attr("id", "focus-clip").append("rect").attr("width", w).attr("height", hFocus);
@@ -152,7 +158,8 @@
           axisY: axisY,
           lineFocus: lineFocus,
           lineContext: lineContext,
-          lineDelta: lineDelta,
+          lineFocusDelta: lineFocusDelta,
+          lineContextDelta: lineContextDelta,
           color: color,
           focus: focus,
           context: context,
@@ -164,7 +171,7 @@
         });
         return _deferred.promise;
       },
-      fetch: function(uri) {
+      fetch: function(uri, baseline) {
         var _deferred, _startT;
         _startT = moment();
         _deferred = $q.defer();
@@ -178,6 +185,7 @@
             chartData = d3.nest().key(function(d) {
               return d.exchange;
             }).entries(data);
+            dataTransform(chartData, baseline, "close");
             time.fetch = moment.duration(moment().diff(_startT), 'ms').asSeconds();
             _deferred.resolve({
               msg: "fetched"
@@ -188,15 +196,21 @@
       },
       render: function(chartType, brushExtentInit) {
         return function(resolve) {
-          var axisYObj, c, contextExchanges, focusExchanges, focusPaths, xMax, xMin, yMax, yMin, _deferred, _startT;
+          var c, contextExchanges, focusExchanges, xMax, xMin, yMax, yMin, _deferred, _startT;
           c = chartObj;
           _deferred = $q.defer();
           _startT = moment();
           c.brushed = function() {
             c.xFocus.domain(c.brush.empty() ? c.xContext.domain() : c.brush.extent());
-            c.focus.selectAll("path.line").attr("d", function(d) {
-              return c.lineFocus(d.values);
-            });
+            if (chartType === "absolute") {
+              c.focus.selectAll("path.line.focus").attr("d", function(d) {
+                return c.lineFocus(d.values);
+              });
+            } else {
+              c.focus.selectAll("path.line.focus").attr("d", function(d) {
+                return c.lineFocusDelta(d.values);
+              });
+            }
             c.focus.select(".xFocus").call(c.axisXFocus);
           };
           c.brush = d3.svg.brush().x(c.xContext).on("brush", c.brushed);
@@ -231,45 +245,72 @@
           c.yFocus.domain([yMin, yMax]);
           c.xContext.domain(c.xFocus.domain());
           c.yContext.domain(c.yFocus.domain());
-          c.focus.append("g").attr("class", "axis xFocus").attr("transform", "translate(0, " + c.hFocus + ")").call(c.axisXFocus);
-          axisYObj = c.focus.select(".axis.yFocus");
-          if (axisYObj.empty()) {
+          if (initRender) {
+            c.focus.append("g").attr("class", "axis xFocus").attr("transform", "translate(0, " + c.hFocus + ")").call(c.axisXFocus);
+          }
+          if (initRender) {
             c.focus.append("g").attr("class", "axis yFocus").call(c.axisY(chartType)).append("text").attr("class", "axis label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "1em").text("per Bitcoin");
           } else {
-            axisYObj.transition().duration(c.transitionDuration).call(c.axisY(chartType));
+            c.focus.select(".axis.yFocus").transition().duration(c.transitionDuration).call(c.axisY(chartType));
           }
           focusExchanges = c.focus.selectAll(".exchange").data(chartData, function(d) {
             return d.key;
           }).enter().append("g").attr("clip-path", "url(#focus-clip)").attr("class", "exchange");
-          focusPaths = c.focus.selectAll(".line.focus");
-          if (focusPaths.empty()) {
+          if (initRender) {
             focusExchanges.append("path").attr("d", function(d) {
-              return c.lineFocus(d.values);
+              if (chartType === "absolute") {
+                return c.lineFocus(d.values);
+              } else {
+                return c.lineFocusDelta(d.values);
+              }
             }).attr("data-legend", function(d) {
               return d.key;
             }).attr("class", "line focus").style("stroke", function(d) {
               return c.color(d.key);
             });
           } else {
-            focusPaths.transition().duration(c.transitionDuration).attr("d", function(d) {
+            c.focus.selectAll(".line.focus").transition().duration(c.transitionDuration).attr("d", function(d) {
               if (chartType === "absolute") {
                 return c.lineFocus(d.values);
               } else {
-                return c.lineDelta(d.values);
+                return c.lineFocusDelta(d.values);
               }
             });
           }
-          c.focus.append("g").attr("class", "legend").attr("transform", "translate(50,30)").style("font-size", "12px").call(legend);
-          c.context.append("g").attr("class", "axis xContext").attr("transform", "translate(0, " + c.hContext + ")").call(c.axisXContext);
-          c.context.append("g").attr("class", "brush").call(c.brush).selectAll("rect").attr("y", -6).attr("height", c.hContext + 7);
+          if (initRender) {
+            c.focus.append("g").attr("class", "legend").attr("transform", "translate(50,30)").style("font-size", "12px").call(legend);
+          }
+          if (initRender) {
+            c.context.append("g").attr("class", "axis xContext").attr("transform", "translate(0, " + c.hContext + ")").call(c.axisXContext);
+          }
+          if (initRender) {
+            c.context.append("g").attr("class", "brush").call(c.brush).selectAll("rect").attr("y", -6).attr("height", c.hContext + 7);
+          } else {
+            c.context.select(".brush").call(c.brush.clear()).call(c.brush);
+          }
           contextExchanges = c.context.selectAll(".exchange").data(chartData, function(d) {
             return d.key;
           }).enter().append("g").attr("class", "exchange");
-          contextExchanges.append("path").attr("class", "line").attr("d", function(d) {
-            return c.lineContext(d.values);
-          }).style("stroke", function(d) {
-            return c.color(d.key);
-          });
+          if (initRender) {
+            contextExchanges.append("path").attr("class", "line context").attr("d", function(d) {
+              if (chartType === "absolute") {
+                return c.lineContext(d.values);
+              } else {
+                return c.lineContextDelta(d.values);
+              }
+            }).style("stroke", function(d) {
+              return c.color(d.key);
+            });
+          } else {
+            c.context.selectAll(".line.context").transition().duration(c.transitionDuration).attr("d", function(d) {
+              if (chartType === "absolute") {
+                return c.lineContext(d.values);
+              } else {
+                return c.lineContextDelta(d.values);
+              }
+            });
+          }
+          initRender = false;
           time.render = moment.duration(moment().diff(_startT), 'ms').asSeconds();
           _deferred.resolve();
           return _deferred.promise;
@@ -298,7 +339,7 @@
       templateUrl: 'ca-chart/ca-chart.html',
       restrict: 'E',
       scope: {
-        data: "="
+        uri: "="
       },
       link: function(scope, ele) {
         var errorCb, fetchP, notifyCb, preRenderP;
@@ -309,14 +350,14 @@
           scope.baseline = baseline;
         });
         preRenderP = caD3Svc.preRender(ele);
-        fetchP = caD3Svc.fetch(scope.data);
+        fetchP = caD3Svc.fetch(scope.uri, scope.baseline);
         errorCb = function(what) {
           console.log(what);
         };
         notifyCb = function(what) {
           console.log(what);
         };
-        $q.all([preRenderP, fetchP]).then(caD3Svc.render("absolute", scope.brushExtentInit), errorCb, notifyCb).then(function() {
+        $q.all([preRenderP, fetchP]).then(caD3Svc.render("relative", scope.brushExtentInit), errorCb, notifyCb).then(function() {
           caD3Svc.renderInfoBox();
           scope.rendered = true;
           scope.c = caD3Svc.chartObj();

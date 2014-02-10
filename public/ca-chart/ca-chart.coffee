@@ -3,6 +3,7 @@ module = angular.module('CaChartModule', [])
 module.factory 'caD3Svc', ($q, $filter) ->
 	chartData = null
 	chartObj = null
+	initRender = true
 	time =
 		preRender: null
 		fetch: null
@@ -136,10 +137,14 @@ module.factory 'caD3Svc', ($q, $filter) ->
 				.interpolate "basis"
 				.x (d) -> xContext d.date
 				.y (d) -> yContext d.close
-		lineDelta = d3.svg.line()
+		lineFocusDelta = d3.svg.line()
 				.interpolate "basis"
 				.x (d) -> xFocus d.date
 				.y (d) -> yFocus d.delta
+		lineContextDelta = d3.svg.line()
+				.interpolate "basis"
+				.x (d) -> xContext d.date
+				.y (d) -> yContext d.delta
 
 		chart = d3.select(canvas)
 				.attr("width", w + marginFocus.l + marginFocus.r)
@@ -177,7 +182,8 @@ module.factory 'caD3Svc', ($q, $filter) ->
 			axisY: axisY
 			lineFocus: lineFocus
 			lineContext: lineContext
-			lineDelta: lineDelta
+			lineFocusDelta: lineFocusDelta
+			lineContextDelta: lineContextDelta
 			color: color
 			focus: focus
 			context: context
@@ -187,7 +193,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 
 		_deferred.resolve {msg: "pre-rendered"}; _deferred.promise
 
-	fetch: (uri) -> # incl. data transform
+	fetch: (uri, baseline) -> # incl. data transform
 		_startT = moment()
 		_deferred = $q.defer()
 
@@ -199,6 +205,8 @@ module.factory 'caD3Svc', ($q, $filter) ->
 				chartData = d3.nest()
 						.key((d) -> d.exchange) # group by this key
 						.entries(data) # apply to this data
+
+				dataTransform(chartData, baseline, "close")
 
 				time.fetch = moment.duration(moment().diff(_startT), 'ms').asSeconds()
 				_deferred.resolve {msg: "fetched"}
@@ -218,7 +226,10 @@ module.factory 'caD3Svc', ($q, $filter) ->
 				#			yMax = d3.max(chartData, (d) -> d3.max(d.values, (d) -> d.close))
 				#			c.yFocus.domain([0, yMax])
 				#			c.yFocus.domain(if c.brush.empty() then c.yFocus.domain() else c.brush.extent())
-				c.focus.selectAll("path.line").attr("d", (d) -> c.lineFocus(d.values))
+				if chartType is "absolute"
+					c.focus.selectAll("path.line.focus").attr("d", (d) -> c.lineFocus(d.values))
+				else
+					c.focus.selectAll("path.line.focus").attr("d", (d) -> c.lineFocusDelta(d.values))
 				c.focus.select(".xFocus").call(c.axisXFocus)
 				#			c.focus.select(".yFocus").call(c.axisY)
 				return
@@ -227,7 +238,6 @@ module.factory 'caD3Svc', ($q, $filter) ->
 					.on("brush", c.brushed) # .x only so don't brush y axis
 
 			# ===========================
-			# render all
 
 			# color.domain(d3.keys(_data[0]).filter((key) -> key is "exchange")) # just returns ['exchange'], not sure what for
 			c.color.domain(chartData.map((d) -> return d.key))
@@ -244,15 +254,17 @@ module.factory 'caD3Svc', ($q, $filter) ->
 			c.xContext.domain(c.xFocus.domain())
 			c.yContext.domain(c.yFocus.domain())
 
+			# ===========================
+			# render focus
+
 			# render x axis
 			c.focus.append("g")
 					.attr "class", "axis xFocus"
 					.attr "transform", "translate(0, #{ c.hFocus })"
-					.call c.axisXFocus
+					.call c.axisXFocus if initRender
 
 			# render y axis
-			axisYObj = c.focus.select(".axis.yFocus")
-			if axisYObj.empty()
+			if initRender
 				c.focus.append("g")
 						.attr "class", "axis yFocus"
 						.call c.axisY(chartType)
@@ -262,7 +274,10 @@ module.factory 'caD3Svc', ($q, $filter) ->
 						.attr "y", 6
 						.attr "dy", "1em" # shift along y axis
 						.text "per Bitcoin"
-			else axisYObj.transition().duration(c.transitionDuration).call(c.axisY(chartType))
+			else
+				c.focus.select(".axis.yFocus")
+						.transition().duration(c.transitionDuration)
+						.call(c.axisY(chartType))
 
 			# render clip path & g for lines
 			focusExchanges = c.focus.selectAll ".exchange"
@@ -272,40 +287,43 @@ module.factory 'caD3Svc', ($q, $filter) ->
 					.attr "class", "exchange"
 
 			# render lines
-			focusPaths = c.focus.selectAll(".line.focus")
-			if focusPaths.empty()
+			if initRender
 				focusExchanges.append("path")
-						.attr "d", (d) -> c.lineFocus(d.values)
+						.attr "d", (d) -> if chartType is "absolute" then c.lineFocus(d.values) else c.lineFocusDelta(d.values)
 						.attr("data-legend", (d) -> d.key) # add this attr for legend f() to render legend
 						.attr("class", "line focus") # focus:hover changes stroke-width
 						.style("stroke", (d) -> c.color(d.key))
 			else
-				focusPaths
+				c.focus.selectAll(".line.focus")
 						.transition().duration(c.transitionDuration)
-						.attr "d", (d) -> if chartType is "absolute" then c.lineFocus(d.values) else c.lineDelta(d.values)
+						.attr "d", (d) -> if chartType is "absolute" then c.lineFocus(d.values) else c.lineFocusDelta(d.values)
 
 			# render legend
 			c.focus.append("g")
 					.attr("class", "legend")
 					.attr("transform", "translate(50,30)")
 					.style("font-size", "12px")
-					.call(legend)
+					.call(legend) if initRender
 
 			# ============================
+			# render context
 
 			# render x axis
 			c.context.append("g")
 					.attr("class", "axis xContext")
 					.attr("transform", "translate(0, #{ c.hContext })")
-					.call(c.axisXContext)
+					.call(c.axisXContext) if initRender
 
 			# render brush
-			c.context.append("g")
-					.attr("class", "brush")
-					.call(c.brush)
-				.selectAll("rect")
-					.attr("y", -6)
-					.attr("height", c.hContext + 7)
+			if initRender
+				c.context.append("g")
+						.attr("class", "brush")
+						.call(c.brush)
+					.selectAll("rect")
+						.attr("y", -6)
+						.attr("height", c.hContext + 7)
+			else
+				c.context.select(".brush").call(c.brush.clear()).call(c.brush)
 
 			# render g for lines
 			contextExchanges = c.context.selectAll(".exchange")
@@ -314,10 +332,15 @@ module.factory 'caD3Svc', ($q, $filter) ->
 					.attr("class", "exchange")
 
 			# render lines
-			contextExchanges.append("path")
-					.attr("class", "line")
-					.attr("d", (d) -> c.lineContext(d.values))
-					.style("stroke", (d) -> c.color(d.key))
+			if initRender
+				contextExchanges.append("path")
+						.attr "class", "line context"
+						.attr "d", (d) -> if chartType is "absolute" then c.lineContext(d.values) else c.lineContextDelta(d.values)
+						.style "stroke", (d) -> c.color(d.key)
+			else
+				c.context.selectAll(".line.context")
+						.transition().duration(c.transitionDuration)
+						.attr "d", (d) -> if chartType is "absolute" then c.lineContext(d.values) else c.lineContextDelta(d.values)
 
 			# ============================
 
@@ -330,6 +353,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 
 			# ============================
 
+			initRender = false
 			time.render = moment.duration(moment().diff(_startT), 'ms').asSeconds()
 			_deferred.resolve(); _deferred.promise
 
@@ -349,7 +373,7 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 	templateUrl: 'ca-chart/ca-chart.html'
 	restrict: 'E'
 	scope:
-		data: "="
+		uri: "="
 	link: (scope, ele) ->
 		scope.rendered = false
 		scope.brushExtentInit = ["10/1/13", "1/15/14"]
@@ -357,13 +381,13 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 		scope.$on "baselineSet", (event, baseline) -> scope.baseline = baseline; return
 
 		preRenderP = caD3Svc.preRender(ele)
-		fetchP = caD3Svc.fetch(scope.data)
+		fetchP = caD3Svc.fetch(scope.uri, scope.baseline)
 
 		errorCb = (what) -> console.log what; return
 		notifyCb = (what) -> console.log what; return
 
 		$q.all([preRenderP, fetchP])
-				.then(caD3Svc.render("absolute", scope.brushExtentInit), errorCb, notifyCb)
+				.then(caD3Svc.render("relative", scope.brushExtentInit), errorCb, notifyCb)
 				.then( ->
 						caD3Svc.renderInfoBox()
 						scope.rendered = true
