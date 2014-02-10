@@ -14,6 +14,10 @@
 </head>
 <body ng-controller="CaAppCtrl as app">
 
+<div class="ca-fullscreen">
+	<i class="fa fa-arrows-alt" ng-click="app.fullscreen()"></i>
+</div>
+
 <nav>
 	<h5>CoinArb</h5>
 	<div class="ca-beta">
@@ -110,6 +114,7 @@
 <script src="bower_components/angular-socket-io/socket.js"></script>
 <script src="bower_components/moment/moment.js"></script>
 <script src="bower_components/d3/d3.js"></script>
+<script src="bower_components/screenfull/dist/screenfull.min.js"></script>
 <script src="js/google-analytics.js"></script>
 <!--<script src="js/notification.js"></script>-->
 <!--<script src="bower_components/lodash/dist/lodash.js"></script>-->

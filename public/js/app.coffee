@@ -53,6 +53,8 @@ app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
 		else throw "Must have at least 1 exchange in display."
 		return
 
+	@fullscreen = -> screenfull.toggle() if screenfull.enabled
+
 	$scope.$on "tickerUpdate", () => @data = exchangeSvc.data; @getBaselineBest(); return
 
 	$scope.$on "baselineSet", () => @getBaselineBest(); return

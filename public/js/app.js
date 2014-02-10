@@ -67,6 +67,11 @@
         throw "Must have at least 1 exchange in display.";
       }
     };
+    this.fullscreen = function() {
+      if (screenfull.enabled) {
+        return screenfull.toggle();
+      }
+    };
     $scope.$on("tickerUpdate", (function(_this) {
       return function() {
         _this.data = exchangeSvc.data;

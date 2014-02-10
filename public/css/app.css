@@ -5930,6 +5930,43 @@ body {
   background-color: #0d0d0d;
   color: #808080;
 }
+@media (min-width: 992px) {
+  .ca-fullscreen {
+    z-index: 999;
+    position: fixed;
+    top: 10px;
+    right: 15px;
+    color: white;
+    opacity: 0.25;
+    -webkit-transform: scale(1.5, );
+    -ms-transform: scale(1.5, );
+    transform: scale(1.5, );
+    -webkit-transform: scale(1.5);
+    -moz-transform: scale(1.5);
+    -ms-transform: scale(1.5);
+    -o-transform: scale(1.5);
+    transform: scale(1.5);
+    -webkit-transition: all 0.15s linear;
+    -moz-transition: all 0.15s linear;
+    -o-transition: all 0.15s linear;
+    -ms-transition: all 0.15s linear;
+    transition: all 0.15s linear;
+  }
+  .ca-fullscreen:hover {
+    color: #5bc0de;
+    opacity: 1;
+    -webkit-transform: scale(2, );
+    -ms-transform: scale(2, );
+    transform: scale(2, );
+    -webkit-transform: scale(2);
+    -moz-transform: scale(2);
+    -ms-transform: scale(2);
+    -o-transform: scale(2);
+    transform: scale(2);
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
+  }
+}
 nav {
   position: absolute;
   width: 60px;
