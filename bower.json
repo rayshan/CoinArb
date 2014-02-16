@@ -23,10 +23,11 @@
     "angular-poller": "c01d49d0c12119dfbf3926d2e73db748160b774d",
     "font-awesome": "~4.0.3",
     "d3": "~3.4.1",
-    "screenfull": "~1.1.1"
+    "screenfull": "~1.1.1",
+    "angular-bootstrap": "~0.10.0",
+    "lesshat": "~2.0.15"
   },
   "devDependencies": {
-    "lodash": "~2.4.1",
-    "less-prefixer": "*"
+    "lodash": "~2.4.1"
   }
 }
