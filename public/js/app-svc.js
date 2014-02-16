@@ -54,7 +54,7 @@
   });
 
   svc.factory('caTickerSvc', function($resource, $filter, poller, caSocketSvc, exchangeSvc, caCheckAndCopySvc) {
-    var USDCNY, data, errorCb, myResource, name, notifyCb, pollers, _i, _len, _ref;
+    var USDCNY, data, errorCb, myResource, name, notifyCb, pollers, resources, start, stop, _ref, _ref1;
     USDCNY = 6.05;
     pollers = [];
     notifyCb = function(id) {
@@ -108,11 +108,39 @@
       throw "poller or resource failed";
       console.log(reason);
     };
+    resources = [];
     _ref = exchangeSvc.data;
     for (name in _ref) {
       data = _ref[name];
+      resources.push({
+        name: name,
+        resource: $resource(data.api.uri, null, {
+          get: {
+            method: 'GET',
+            isArray: false
+          }
+        })
+      });
+    }
+    start = function() {
+      poller.restartAll();
+      pollers.forEach(function(poller) {
+        poller.item.promise.then(null, errorCb, notifyCb(poller.id));
+      });
+    };
+    stop = function() {
+      poller.stopAll();
+    };
+    _ref1 = exchangeSvc.data;
+    for (name in _ref1) {
+      data = _ref1[name];
       if (data.api.type === "REST") {
-        myResource = $resource(data.api.uri);
+        myResource = $resource(data.api.uri, null, {
+          get: {
+            method: 'GET',
+            isArray: false
+          }
+        });
         pollers.push({
           id: name,
           item: poller.get(myResource, {
@@ -124,10 +152,13 @@
         caSocketSvc.process(data);
       }
     }
-    for (_i = 0, _len = pollers.length; _i < _len; _i++) {
-      poller = pollers[_i];
+    pollers.forEach(function(poller) {
       poller.item.promise.then(null, errorCb, notifyCb(poller.id));
-    }
+    });
+    return {
+      start: start,
+      stop: stop
+    };
   });
 
   svc.factory('caSocketSvc', function($rootScope, $filter, socketFactory, caCheckAndCopySvc) {

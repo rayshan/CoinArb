@@ -88,7 +88,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 		return
 
 	preRender: (ele) ->
-		_startT = moment()
+		_startT = Date.now()
 		_deferred = $q.defer()
 
 		transitionDuration = 250
@@ -189,12 +189,12 @@ module.factory 'caD3Svc', ($q, $filter) ->
 			context: context
 			infoBox: infoBox
 
-		time.preRender = moment.duration(moment().diff(_startT), 'ms').asSeconds()
+		time.preRender = moment.duration(moment(Date.now()).diff(_startT), 'ms').asSeconds()
 
 		_deferred.resolve {msg: "pre-rendered"}; _deferred.promise
 
 	fetch: (uri, baseline) -> # incl. data transform
-		_startT = moment()
+		_startT = Date.now()
 		_deferred = $q.defer()
 
 		d3.tsv uri, dataParser, (err, data) ->
@@ -208,7 +208,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 
 				dataTransform(chartData, baseline, "close")
 
-				time.fetch = moment.duration(moment().diff(_startT), 'ms').asSeconds()
+				time.fetch = moment.duration(moment(Date.now()).diff(_startT), 'ms').asSeconds()
 				_deferred.resolve {msg: "fetched"}
 			return
 		_deferred.promise
@@ -218,7 +218,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 			c = chartObj
 
 			_deferred = $q.defer()
-			_startT = moment()
+			_startT = Date.now()
 
 			# brush
 			c.brushed = ->
@@ -354,7 +354,7 @@ module.factory 'caD3Svc', ($q, $filter) ->
 			# ============================
 
 			initRender = false
-			time.render = moment.duration(moment().diff(_startT), 'ms').asSeconds()
+			time.render = moment.duration(moment(Date.now()).diff(_startT), 'ms').asSeconds()
 			_deferred.resolve(); _deferred.promise
 
 	renderInfoBox: ->
@@ -379,6 +379,7 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 		scope.brushExtentInit = ["10/1/13", "1/15/14"]
 		scope.baseline = scope.$parent.app.baseline
 		scope.$on "baselineSet", (event, baseline) -> scope.baseline = baseline; return
+		scope.chartType = "relative"
 
 		preRenderP = caD3Svc.preRender(ele)
 		fetchP = caD3Svc.fetch(scope.uri, scope.baseline)
@@ -387,7 +388,7 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 		notifyCb = (what) -> console.log what; return
 
 		$q.all([preRenderP, fetchP])
-				.then(caD3Svc.render("relative", scope.brushExtentInit), errorCb, notifyCb)
+				.then(caD3Svc.render(scope.chartType, scope.brushExtentInit), errorCb, notifyCb)
 				.then( ->
 						caD3Svc.renderInfoBox()
 						scope.rendered = true
@@ -395,25 +396,14 @@ module.directive 'caChart', ($q, $filter, caD3Svc) ->
 						scope.data = caD3Svc.chartData()
 						return)
 
-		scope.update = (chartType) ->
-			if chartType is "absolute"
-				caD3Svc.render("absolute", scope.brushExtentInit)()
-			else
-				caD3Svc.transform(scope.data, scope.baseline, "close")
-				caD3Svc.render("relative", scope.brushExtentInit)()
-#				yMinNew = d3.min(scope.data, (d) -> d3.min(d.values, (d) -> d.delta))
-#				yMaxNew = d3.max(scope.data, (d) -> d3.max(d.values, (d) -> d.delta))
-#				axisNew = d3.svg.axis()
-#						.scale d3.scale.linear().domain([yMinNew, yMaxNew]).range([scope.c.hFocus, 0])
-#						.orient "left"
-#						.ticks 5, "+%"
-#				scope.c.yFocus.domain([yMinNew, yMaxNew])
-#				scope.c.focus.select ".axis.yFocus"
-#						.transition().duration(scope.c.transitionDuration)
-#						.call axisNew
-#				scope.c.focus.selectAll ".line.focus"
-#						.transition().duration(scope.c.transitionDuration)
-#						.attr "d", (d) -> scope.c.lineDelta(d.values)
+		scope.$watch 'chartType', (newVal, oldVal) ->
+			if newVal != oldVal
+				if newVal is "absolute"
+					caD3Svc.render("absolute", scope.brushExtentInit)()
+				else
+					caD3Svc.transform(scope.data, scope.baseline, "close")
+					caD3Svc.render("relative", scope.brushExtentInit)()
 			return
 
+		
 		return

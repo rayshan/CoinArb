@@ -1,5 +1,6 @@
 @import "../bower_components/bootstrap/less/bootstrap.less";
-@import "../bower_components/less-prefixer/prefixer.less";
+//@import "../bower_components/less-prefixer/prefixer.less";
+@import "../bower_components/lesshat/build/lesshat-prefixed.less";
 @import "../ca-chart/ca-chart.less";
 @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700);
 @import url(https://fonts.googleapis.com/css?family=Droid+Sans:400,700);
@@ -27,37 +28,39 @@
 @ca-easing-func-2: cubic-bezier(.55,-0.26,.27,.96); // ray's self built
 @ca-easing-func-3: cubic-bezier(0.250, 0.250, 0.115, 1.445); // looks the best
 
-body {
-	background-color: @ca-dark-1;
+html, body {
+	background-color: black;
 	color: @ca-light-2;
+	height: 100%;
 }
 
 @media (min-width: @screen-md-min) {
 	.ca-fullscreen {
-		z-index: 999;
+		z-index: 50;
 		position: fixed;
 		top: 10px; right: 15px;
 		color: white;
 		opacity: 0.25;
-		.scale(1.5);
-		.transition(all 0.15s linear);
+		.lh-scale(1.5);
+		.lh-transition(all 0.15 linear);
 
 		&:hover {
 			color: @brand-info;
 			opacity: 1;
-			.scale(2);
+			.lh-scale(2);
 			cursor: -webkit-zoom-in;
 			cursor: -moz-zoom-in;
 		}
 	}
 }
 
-nav {
-	position: absolute;
+.ca-nav {
+	position: relative;
 	width: 60px;
 	height: 100%;
-	background-color: black;
 	text-align: center;
+	float: left;
+	background-color: black;
 
 	.ca-clock {
 		font-family: @font-family-monospace;
@@ -67,9 +70,7 @@ nav {
 		width: 100%;
 		line-height: 60px;
 
-		i {
-			vertical-align: middle;
-		}
+		i { vertical-align: middle }
 
 		&:hover {
 			background-color: @ca-light-1;
@@ -78,31 +79,41 @@ nav {
 	}
 }
 
-div#wrapper {
-	margin-left: 60px;
+.ca-nav-content {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 18vw;
+	height: 100%;
+	background-color: @ca-dark-1;
+	.lh-transition(transform 0.5);
+	z-index: -999;
+}
+
+.ca-content-wrapper {
+	background: @ca-dark-1;
+	width: 100%;
+	height: 100%;
 
 	section#ca-exchanges {
 		.make-row();
+		height: 100% * @ca-split;
 
 		div.ca-exchange {
-			height: @ca-split * 100vh;
+			height: 100%;
 			text-align: center;
-//			.transition(all 0.25s @ca-easing-func-3);
+//			.lh-transition(all 0.25s @ca-easing-func-3);
 //			.transform-origin(top);
 
 			&:hover {
 				background-color: @ca-dark-2;
-//				.scale(1.05);
+//				.lh-scale(1.05);
 //				z-index: 500;
 			}
 
 			&.ca-baseline {
 				box-shadow: inset 0 5px @brand-info;
 //				z-index: 1;
-			}
-
-			img.ca-logo {
-				-webkit-filter: grayscale(1) invert(1) brightness(0.95);
 			}
 
 			div.ca-display {
@@ -122,11 +133,11 @@ div#wrapper {
 					font-size: 2.5em;
 					vertical-align: middle;
 
-					.transition(all 0.15s @ca-easing-func);
-					.transform-origin(center center);
+					.lh-transition(all 0.15s @ca-easing-func);
+					.lh-transform-origin(center center);
 
 					&.change {
-						.scale(1.1);
+						.lh-scale(1.1);
 						color: white;
 					}
 				}
@@ -142,7 +153,7 @@ div#wrapper {
 
 				.ca-best {
 					color: @brand-info !important;
-					.transition(all 0.25s @ca-easing-func);
+					.lh-transition(all 0.25s @ca-easing-func);
 
 					&.ng-hide-add, &.ng-hide-remove {
 						display: block !important;
@@ -150,7 +161,7 @@ div#wrapper {
 
 					&.ng-hide {
 						color: white !important;
-						.scale(2);
+						.lh-scale(2);
 					}
 
 				}
@@ -161,8 +172,8 @@ div#wrapper {
 
 	section#ca-chart {
 		position: relative; // required to make loader centered
-		height: (1 - @ca-split - 0.01) * 100vh;
-		// hack to remove scroll bar, otherwise returns 30.0000000001 vh wtf
+		height: 99% * (1 - @ca-split);
+		// 99% - hack to remove scroll bar
 	}
 }
 
@@ -174,7 +185,7 @@ button.ca-btn {
 	padding: 10px;
 	text-align: center;
 	vertical-align: middle;
-	.transition(all 0.2s @ca-easing-func);
+	.lh-transition(all 0.2s @ca-easing-func);
 //	white-space: nowrap;
 
 	&:hover {
@@ -187,18 +198,18 @@ button.ca-btn {
 	&.ca-btn-baseline {
 		border: 1px solid @brand-info;
 		color: @brand-info;
-		.transition(all 0.1s @ca-easing-func);
+		.lh-transition(all 0.1s @ca-easing-func);
 
 		&:hover {
 			background-color: @ca-dark-1;
-			.scale(1.05);
+			.lh-scale(1.05);
 		}
 	}
 }
 
 a.ca-btn {
 	color: @ca-dark-3;
-	.transition(all 0.2s @ca-easing-func);
+	.lh-transition(all 0.2s @ca-easing-func);
 
 	&:hover { color: @ca-dark-4 }
 }
@@ -214,29 +225,81 @@ div.ca-loader {
 	position: absolute;
 	top: 0; left: 0; bottom: 0; right: 0;
 
-	.transition(all 0.25s @ca-easing-func);
+	.lh-transition(all 0.25s @ca-easing-func);
 
 	&.ng-hide-add, &.ng-hide-remove {
 		display: block!important;
 	}
 
 	&.ng-hide {
-		.scale(0.75);
+		.lh-scale(0.75);
 		opacity: 0.5;
 	}
 
 }
 
 div.ca-blur {
-	.transition(all 0.35s @ca-easing-func);
+	.lh-transition(filter 0.35 @ca-easing-func);
+	.lh-blur(3px);
 
-	filter: blur(3px);
-	-webkit-filter: blur(3px);
-
-	&.disabled {
-		filter: none;
-		-webkit-filter: none;
-	}
+	&.disabled { .lh-filter(none) }
 }
 
 .ca-beta {font-family: @font-family-monospace; font-weight: bold; color: @brand-info}
+
+
+.ca-wrapper {
+	height: 100%;
+	.lh-perspective(2000px);
+}
+
+.ca-pusher {
+	width: calc(~"100% - 60px");
+	height: 100%;
+	float: left;
+	.lh-transform-style(preserve-3d);
+	.lh-transition(transform 0.5);
+	z-index: 99;
+}
+
+.ca-pusher::after {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 0;
+	height: 0;
+	background: rgba(0,0,0,0.5);
+	content: '';
+	opacity: 0;
+	.lh-transition(opacity 0.5s linear);
+	z-index: 99;
+}
+
+.ca-open {
+	.ca-pusher::after {
+		width: 100%;
+		height: 100%;
+		opacity: 1;
+		.lh-transition(opacity 0.5);
+	}
+
+	// .ca-content-wrapper {
+	//	.lh-transition(all 0.5s linear);
+	//	opacity: .5;
+	//}
+
+	.ca-pusher {
+		.lh-transform(translate3d(12%, 0, -50em) rotateY(-10deg)); // x/y/z
+		// doing lh- separately causes only 1 transform to be effective
+	}
+
+	.ca-nav-content {
+		.lh-transition(transform 0.5);
+		.lh-transform(translateX(100%));
+	}
+}
+
+
+//.ca-nav::after {
+//	display: none;
+//}

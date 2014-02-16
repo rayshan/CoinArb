@@ -88,7 +88,7 @@
     return {
       preRender: function(ele) {
         var axisXContext, axisXFocus, axisY, canvas, chart, color, context, focus, hContext, hFocus, hOrig, infoBox, lineContext, lineContextDelta, lineFocus, lineFocusDelta, marginBase, marginContext, marginFocus, transitionDuration, w, wOrig, xContext, xFocus, yContext, yFocus, _deferred, _startT;
-        _startT = moment();
+        _startT = Date.now();
         _deferred = $q.defer();
         transitionDuration = 250;
         canvas = ele[0].querySelector(".ca-chart-line").children[1];
@@ -165,7 +165,7 @@
           context: context,
           infoBox: infoBox
         };
-        time.preRender = moment.duration(moment().diff(_startT), 'ms').asSeconds();
+        time.preRender = moment.duration(moment(Date.now()).diff(_startT), 'ms').asSeconds();
         _deferred.resolve({
           msg: "pre-rendered"
         });
@@ -173,7 +173,7 @@
       },
       fetch: function(uri, baseline) {
         var _deferred, _startT;
-        _startT = moment();
+        _startT = Date.now();
         _deferred = $q.defer();
         d3.tsv(uri, dataParser, function(err, data) {
           if (err != null) {
@@ -186,7 +186,7 @@
               return d.exchange;
             }).entries(data);
             dataTransform(chartData, baseline, "close");
-            time.fetch = moment.duration(moment().diff(_startT), 'ms').asSeconds();
+            time.fetch = moment.duration(moment(Date.now()).diff(_startT), 'ms').asSeconds();
             _deferred.resolve({
               msg: "fetched"
             });
@@ -199,7 +199,7 @@
           var c, contextExchanges, focusExchanges, xMax, xMin, yMax, yMin, _deferred, _startT;
           c = chartObj;
           _deferred = $q.defer();
-          _startT = moment();
+          _startT = Date.now();
           c.brushed = function() {
             c.xFocus.domain(c.brush.empty() ? c.xContext.domain() : c.brush.extent());
             if (chartType === "absolute") {
@@ -311,7 +311,7 @@
             });
           }
           initRender = false;
-          time.render = moment.duration(moment().diff(_startT), 'ms').asSeconds();
+          time.render = moment.duration(moment(Date.now()).diff(_startT), 'ms').asSeconds();
           _deferred.resolve();
           return _deferred.promise;
         };
@@ -349,6 +349,7 @@
         scope.$on("baselineSet", function(event, baseline) {
           scope.baseline = baseline;
         });
+        scope.chartType = "relative";
         preRenderP = caD3Svc.preRender(ele);
         fetchP = caD3Svc.fetch(scope.uri, scope.baseline);
         errorCb = function(what) {
@@ -357,20 +358,22 @@
         notifyCb = function(what) {
           console.log(what);
         };
-        $q.all([preRenderP, fetchP]).then(caD3Svc.render("relative", scope.brushExtentInit), errorCb, notifyCb).then(function() {
+        $q.all([preRenderP, fetchP]).then(caD3Svc.render(scope.chartType, scope.brushExtentInit), errorCb, notifyCb).then(function() {
           caD3Svc.renderInfoBox();
           scope.rendered = true;
           scope.c = caD3Svc.chartObj();
           scope.data = caD3Svc.chartData();
         });
-        scope.update = function(chartType) {
-          if (chartType === "absolute") {
-            caD3Svc.render("absolute", scope.brushExtentInit)();
-          } else {
-            caD3Svc.transform(scope.data, scope.baseline, "close");
-            caD3Svc.render("relative", scope.brushExtentInit)();
+        scope.$watch('chartType', function(newVal, oldVal) {
+          if (newVal !== oldVal) {
+            if (newVal === "absolute") {
+              caD3Svc.render("absolute", scope.brushExtentInit)();
+            } else {
+              caD3Svc.transform(scope.data, scope.baseline, "close");
+              caD3Svc.render("relative", scope.brushExtentInit)();
+            }
           }
-        };
+        });
       }
     };
   });

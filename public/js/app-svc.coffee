@@ -98,11 +98,27 @@ svc.factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc
 		console.log(reason)
 		return
 
+	resources = []
+
+	for name, data of exchangeSvc.data
+		resources.push {name: name, resource: $resource data.api.uri, null, {
+			get: {method: 'GET', isArray: false}
+		}}
+
+	start = ->
+		poller.restartAll()
+		pollers.forEach (poller) ->
+			poller.item.promise.then null, errorCb, notifyCb(poller.id); return
+		return
+	stop = -> poller.stopAll(); return
+
 	for name, data of exchangeSvc.data
 		if data.api.type == "REST"
-			myResource = $resource data.api.uri
+			myResource = $resource data.api.uri, null, {
+				get: {method: 'GET', isArray: false}
+			}
 
-			pollers.push({
+			pollers.push {
 				id: name
 				item:
 					poller.get myResource, {
@@ -110,13 +126,13 @@ svc.factory 'caTickerSvc', ($resource, $filter, poller, caSocketSvc, exchangeSvc
 						delay: data.api.rateLimit
 					}
 				}
-			)
 		else caSocketSvc.process(data)
 
-	for poller in pollers
-		poller.item.promise.then(null, errorCb, notifyCb(poller.id))
+	pollers.forEach (poller) ->
+		poller.item.promise.then null, errorCb, notifyCb(poller.id); return
 
-	return
+	start: start
+	stop: stop
 
 svc.factory 'caSocketSvc', ($rootScope, $filter, socketFactory, caCheckAndCopySvc) ->
 	unsubscribe =

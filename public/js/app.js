@@ -2,17 +2,27 @@
 (function() {
   var app;
 
-  app = angular.module('CaApp', ['CaAppDir', 'CaAppSvc', 'CaAppFilter', 'CaChartModule']);
+  app = angular.module('CaApp', ['CaAppDir', 'CaAppSvc', 'CaAppFilter', 'CaChartModule', 'ui.bootstrap']);
 
   app.run(function(caTickerSvc) {});
 
-  app.controller('CaAppCtrl', function($scope, $interval, exchangeSvc) {
+  app.controller('CaAppCtrl', function($scope, $interval, exchangeSvc, caTickerSvc) {
     this.showExchanges = true;
     this.showChart = true;
     this.currency = "USD";
+    this.paused = false;
+    this.pause = function() {
+      if (!this.paused) {
+        this.paused = true;
+        caTickerSvc.stop();
+      } else {
+        this.paused = false;
+        caTickerSvc.start();
+      }
+    };
     this.getTime = function(timeZone) {
       var now;
-      now = moment();
+      now = moment(Date.now());
       return now.format('HH:mm:ss');
     };
     $interval(this.getTime, 1);

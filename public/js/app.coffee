@@ -3,18 +3,28 @@ app = angular.module('CaApp', [
 	'CaAppSvc'
 	'CaAppFilter'
 	'CaChartModule'
+	'ui.bootstrap'
 ])
 
 app.run (caTickerSvc) ->
 	# excute immediately on app bootstrap
 	return
 
-app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc) ->
+app.controller 'CaAppCtrl', ($scope, $interval, exchangeSvc, caTickerSvc) ->
 	@showExchanges = true
 	@showChart = true
 	@currency = "USD"
+	@paused = false
+	@pause = ->
+		if !@paused # running
+			@paused = true
+			caTickerSvc.stop()
+		else # paused
+			@paused = false
+			caTickerSvc.start()
+		return
 
-	@getTime = (timeZone) -> now = moment(); now.format('HH:mm:ss')
+	@getTime = (timeZone) -> now = moment(Date.now()); now.format('HH:mm:ss')
 	$interval @getTime, 1
 
 	@data = exchangeSvc.data
