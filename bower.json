@@ -20,7 +20,7 @@
     "angular-animate": "~1.2.7",
     "angular-socket-io": "~0.3.0",
     "socket.io-client": "~0.9.16",
-    "angular-poller": "f16c9c87b5",
+    "angular-poller": "git@github.com:emmaguo/angular-poller.git#f16c9c87b5f2158b90d0c836ed6ef4f9cf460277",
     "font-awesome": "~4.0.3",
     "d3": "~3.4.1",
     "screenfull": "~1.1.1",
