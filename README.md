@@ -6,6 +6,8 @@ CoinArb
 
 Bitcoin arbitrage watcher.
 
+![CoinArb Screenshot](/coinarb-screenshot.png)
+
 Features
 ===
 
