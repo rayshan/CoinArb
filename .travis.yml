@@ -7,8 +7,8 @@ env:
     - TEST=test
 
 before_script:
-  - echo 'before_script running...'
-  - echo $TEST$
+  - "# before_script running..."
+  - echo $TEST
 
 after_script:
   - echo 'after_script running...'
