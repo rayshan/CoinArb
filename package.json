@@ -1,11 +1,11 @@
 {
-  "name": "CoinArb",
-  "version": "0.1",
-  "description": "",
-  "main": "app.js",
-  "scripts": {
-    "test": ""
-  },
-  "author": "Ray Shan <ray@shan.io>",
-  "license": "MIT"
+	"name": "CoinArb",
+	"version": "0.1.0",
+	"description": "",
+	"main": "app.js",
+	"scripts": {
+		"test": "echo 'tests to be added'"
+	},
+	"author": "Ray Shan <ray@shan.io>",
+	"license": "MIT"
 }

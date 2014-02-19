@@ -1,4 +1,13 @@
 language: node_js
-  node_js:
-    - "0.11"
-    - "0.10"
+node_js:
+  - "0.10"
+
+env:
+  global:
+    - TEST=test
+
+before_script:
+  - bower install
+
+after_script:
+  - echo 'all done'
