@@ -7,9 +7,9 @@ env:
     - TEST=test
 
 before_script:
-  - npm install -g bower
-  - bower install
+  - echo 'before_script running...'
+  - echo $TEST$
 
 after_script:
-  - echo $TEST$
-  - echo 'all done'
+  - echo 'after_script running...'
+  - echo 'All done!'
