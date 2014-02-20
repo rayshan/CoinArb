@@ -5,11 +5,14 @@ node_js:
 env:
   global:
     - TEST=test
+  - secure: "k2ffu5/wYmxd92gcnI8kw6Ag9ftruJUVow5dGmJTuYnJKMhTZ0Oxcz6FpkZ0oC1aJwGx9eofcI8SBMiXPhapd2XSKHocKdXWCydupzZn4u12XUzg5chY6PFLK2JXEJkI7s86vSlIMG/XLqn1Fd57pHIpkbsleHcb0cMa6aS6CMg="
 
 before_script:
   - "# before_script running..."
   - echo $TEST
 
 after_script:
-  - echo 'after_script running...'
-  - echo 'All done!'
+  - "# after_script running..."
+  - openssl aes-256-cbc -pass "pass:$MY_SECRET_ENV" -in scripts/travis-ci-key.enc -out scripts/travis-ci-key -d -a
+  - ssh -i scripts/travis-ci-key git@shan.io
+  - ls -la
