@@ -16,3 +16,4 @@ after_script:
   - openssl aes-256-cbc -pass "pass:$MY_SECRET_ENV" -in scripts/travis-ci-key.enc -out scripts/travis-ci-key -d -a
   - ssh -i scripts/travis-ci-key git@shan.io
   - ls -la
+  - "# All done!"
