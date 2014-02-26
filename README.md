@@ -22,3 +22,7 @@ Install dependencies:
 
 Serve:
 `/public/index.html`
+
+---
+
+`< >` with ❤ by Ray Shan
