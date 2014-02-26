@@ -25,4 +25,4 @@ Serve:
 
 ---
 
-`< >` with ❤ by Ray Shan
+`< >` with ❤ by [Ray Shan](http://shan.io)
